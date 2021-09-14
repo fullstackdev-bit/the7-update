@@ -1,0 +1,56 @@
+<?php
+/**
+ * The7 theme.
+ * @package The7
+ * @since   1.0.0
+ */
+
+// File Security Check
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Set the content width based on the theme's design and stylesheet.
+ * @since 1.0.0
+ */
+if ( ! isset( $content_width ) ) {
+	$content_width = 1200; /* pixels */
+}
+
+/**
+ * Initialize theme.
+ * @since 1.0.0
+ */
+require( trailingslashit( get_template_directory() ) . 'inc/init.php' );
+
+
+
+// custom url added here
+/*   
+add_action( 'init', 'wpse26388_rewrites_init' );
+function wpse26388_rewrites_init(){
+    add_rewrite_rule(
+        'details-2/([0-9]+)',
+        'index.php?pagename=details-2&id=$matches[1]',
+        'top' );
+}
+
+add_filter( 'query_vars', 'wpse26388_query_vars' );
+function wpse26388_query_vars( $query_vars ){
+    $query_vars[] = 'id';
+    return $query_vars;
+}
+*/
+// custom url end here
+
+
+
+
+add_action('init', 'start_session_nw', 1);
+
+function start_session_nw() {
+if(!session_id()) {
+session_start();
+}
+}
