@@ -7,30 +7,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 add_action( 'save_post', 'the7_save_shortcode_inline_css', 1, 2 );
 add_filter( 'the_excerpt', 'the7_shortcodeaware_excerpt_filter', 9 );
 add_filter( 'the7_shortcodeaware_excerpt', 'the7_shortcodeaware_excerpt_filter' );
-add_action( 'wp_enqueue_scripts', 'the7_print_shortcodes_inline_css', 1000 );
-
-function the7_print_shortcodes_inline_css() {
-	global $post;
-
-	if ( ! $post || is_home() ) {
-		return;
-	}
-
-	$shortcodes_inline_css = get_post_meta( get_the_ID(), DT_Shortcode_With_Inline_Css::INLINE_CSS_META_KEY, true );
-
-	/**
-	 * Allow to change shortcodes inline css before output.
-	 *
-	 * @since 6.6.1
-	 */
-	$shortcodes_inline_css = apply_filters( 'the7_shortcodes_get_inline_css', $shortcodes_inline_css );
-
-	if ( ! $shortcodes_inline_css ) {
-		return;
-	}
-
-	wp_add_inline_style( 'style', $shortcodes_inline_css );
-}
 
 if ( ! function_exists( 'the7_save_shortcode_inline_css' ) ) {
 
@@ -46,16 +22,16 @@ if ( ! function_exists( 'the7_save_shortcode_inline_css' ) ) {
 			return;
 		}
 
-		if ( ! class_exists( 'lessc', false ) ) {
-			include PRESSCORE_DIR . '/vendor/lessphp/lessc.inc.php';
+		if ( ! class_exists( 'the7_lessc', false ) ) {
+			include PRESSCORE_DIR . '/vendor/lessphp/the7_lessc.inc.php';
 		}
 
 		$css = the7_generate_shortcode_css( $post->post_content );
 
 		if ( $css ) {
-			update_post_meta( $postID, 'the7_shortcodes_inline_css', $css );
+			update_post_meta( $postID, 'the7_shortcodes_dynamic_css', $css );
 		} else {
-			delete_post_meta( $postID, 'the7_shortcodes_inline_css' );
+			delete_post_meta( $postID, 'the7_shortcodes_dynamic_css' );
 		}
 	}
 }
@@ -67,20 +43,27 @@ if ( ! function_exists( 'the7_generate_shortcode_css' ) ) {
 	 *
 	 * @param string $content
 	 *
-	 * @return string
+	 * @return array
 	 */
 	function the7_generate_shortcode_css( $content ) {
 		if ( empty( $content ) ) {
-			return '';
+			return array();
 		}
 
-		$css = '';
+		$css = array();
 		preg_match_all( '/' . get_shortcode_regex() . '/', $content, $shortcodes );
 		foreach ( $shortcodes[2] as $index => $tag ) {
-			$attr_array = shortcode_parse_atts( trim( $shortcodes[3][ $index ] ) );
-			$css        .= apply_filters( "the7_generate_sc_{$tag}_css", '', $attr_array );
+			$attr_array    = shortcode_parse_atts( trim( $shortcodes[3][ $index ] ) );
+			$shortcode_css = (array) apply_filters( "the7_generate_sc_{$tag}_css", array(), $attr_array );
+			unset( $shortcode_css[0] );
+			reset( $shortcode_css );
+			$uid = key( $shortcode_css );
+			if ( $shortcode_css && ! array_key_exists( $uid, $css ) ) {
+				$css[ $uid ] = $shortcode_css[ $uid ];
+			}
 			if ( ! empty( $shortcodes[5][ $index ] ) ) {
-				$css .= the7_generate_shortcode_css( $shortcodes[5][ $index ] );
+				$shortcodes_css = the7_generate_shortcode_css( $shortcodes[5][ $index ] );
+				$css            = array_merge( $css, $shortcodes_css );
 			}
 		}
 
@@ -171,9 +154,12 @@ if ( ! function_exists( 'the7_shortcodes_to_strip_from_auto_exerpt' ) ) {
 			'dt_portfolio_jgrid',
 			'dt_portfolio_slider',
 			'dt_portfolio_masonry',
+			'dt_portfolio_carousel',
 			'dt_gallery_masonry',
 			'dt_media_gallery_carousel',
 			'dt_albums',
+			'dt_albums_masonry',
+			'dt_albums_carousel',
 			'dt_albums_jgrid',
 			'dt_albums_scroller',
 			'dt_photos_masonry',
@@ -187,6 +173,9 @@ if ( ! function_exists( 'the7_shortcodes_to_strip_from_auto_exerpt' ) ) {
 			'dt_testimonials_masonry',
 			'dt_slideshow',
 			'dt_gallery_photos_masonry',
+			'dt_photos_carousel',
+			'dt_benefits_vc',
+			'dt_logos',
 			'featured_products',
 			'recent_products',
 			'product_page',

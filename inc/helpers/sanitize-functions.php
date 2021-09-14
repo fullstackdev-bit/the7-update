@@ -84,7 +84,7 @@ if ( ! function_exists( 'presscore_array_value' ) ) :
 	 * @return mixed Returns null if $key not in $array
 	 */
 	function presscore_array_value( $key, $array, $default = null ) {
-		return isset( $array[ $key ] ) ? $array[ $key ] : $default;
+		return the7_array_match( $key, $array, $default );
 	}
 
 endif;

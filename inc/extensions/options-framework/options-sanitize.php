@@ -6,6 +6,8 @@
 // File Security Check
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
+add_filter( 'of_sanitize_code_editor', 'of_sanitize_without_sanitize' );
+
 /**
  * Sanitize filter for spacing field.
  *
@@ -138,16 +140,60 @@ add_filter( 'of_sanitize_square_size', 'of_sanitize_square_size' );
 
 /* Slider */
 
-function of_sanitize_slider($input, $option) {
-
-	if ( !is_numeric($input) && isset($option['std']) ) {
-		$input = intval($option['std']);
-	} else {
-		$input = intval($input);
+function of_sanitize_slider( $input, $option ) {
+	if ( $input === '' || ( isset( $input['val'] ) && $input['val'] === '' ) ) {
+		return null; //for responsive option
 	}
-	return $input;
+
+	$input_val = $input;
+	$units = '';
+	if ( isset( $option['units'] ) ) {
+		$units = $option['units'];
+	}
+	$range = null;
+	if ( isset( $option['range'] ) ) {
+		$range = $option['range'];
+	}
+
+	if ( is_array( $input ) ) {
+		$input_units = 'px';
+		if ( isset( $input['units'] ) ) {
+			$input_units = $input['units'];
+		}
+
+		$input_val = $input['val'] . $input_units;
+	}
+
+	$number = The7_Option_Field_Slider::sanitize( $input_val, $units, $range );
+
+	if ( $number['val'] === '' ) {
+		return isset( $option['std'] ) ? $option['std'] : '';
+	}
+
+	return The7_Option_Field_Slider::encode( $number );
 }
 add_filter( 'of_sanitize_slider', 'of_sanitize_slider', 10, 2 );
+
+function of_sanitize_responsive_option($input, $option) {
+	if (isset($option['option'])) {
+		$responsive_options = array();
+		$options_val = The7_Option_Field_Responsive_Option::sanitize($input);
+		foreach ( The7_Option_Field_Responsive_Option::get_devices() as $device ) {
+			$responsive_options[$device] = $option['option'];
+			$responsive_options[$device]['id'] = $device;
+		}
+		$options = optionsframework_sanitize_options_values( $responsive_options, $options_val);
+		//clear empty(null) fields
+		$options = array_filter($options, function($value) { return !is_null($value);});
+		return $options;
+	}
+	if (isset($option['std'])){
+		return The7_Option_Field_Responsive_Option::sanitize($option['std']);
+	}
+	return "";
+}
+
+add_filter( 'of_sanitize_responsive_option', 'of_sanitize_responsive_option', 10, 2 );
 
 /* posts per page */
 
@@ -304,7 +350,12 @@ add_filter( 'of_sanitize_select', 'of_sanitize_enum', 10, 2);
 
 /* Web Fonts */
 
-add_filter( 'of_sanitize_web_fonts', 'esc_attr', 10, 2);
+add_filter( 'of_sanitize_web_fonts', 'of_sanitize_web_fonts', 10, 2);
+
+
+/* Font sizes */
+
+add_filter( 'of_sanitize_font_sizes', 'of_sanitize_font_sizes', 10, 2);
 
 /* Radio */
 
@@ -515,29 +566,26 @@ add_filter( 'of_background_attachment', 'of_sanitize_background_attachment' );
 /* Typography */
 
 function of_sanitize_typography( $input, $option ) {
-
-	$output = wp_parse_args( $input, array(
-		'size'  => '',
-		'face'  => '',
-		'style' => '',
-		'color' => ''
-	) );
-
-	if ( isset( $option['options']['faces'] ) && isset( $input['face'] ) ) {
-		if ( !( array_key_exists( $input['face'], $option['options']['faces'] ) ) ) {
-			$output['face'] = '';
-		}
-	}
-	else {
-		$output['face']  = apply_filters( 'of_font_face', $output['face'] );
+	$options = The7_Option_Field_Typography::get_typography_fields();
+	foreach ( $options as $field => $default_declaration ) {
+		$options[$field]['id'] = $field;
 	}
 
-	$output['size']  = apply_filters( 'of_font_size', $output['size'] );
-	$output['style'] = apply_filters( 'of_font_style', $output['style'] );
-	$output['color'] = apply_filters( 'of_sanitize_color', $output['color'] );
-	return $output;
+	return optionsframework_sanitize_options_values( $options, $input);
 }
 add_filter( 'of_sanitize_typography', 'of_sanitize_typography', 10, 2 );
+
+/* Typography */
+
+function of_sanitize_shadow( $input, $option ) {
+	$options = The7_Option_Field_Shadow::get_fields();
+	foreach ( $options as $field => $default_declaration ) {
+		$options[$field]['id'] = $field;
+	}
+
+	return optionsframework_sanitize_options_values( $options, $input);
+}
+add_filter( 'of_sanitize_shadow', 'of_sanitize_shadow', 10, 2 );
 
 function of_sanitize_font_size( $value ) {
 	$recognized = of_recognized_font_sizes();
@@ -663,6 +711,7 @@ function of_sanitize_hex( $hex, $default = '' ) {
 	if ( of_validate_hex( $hex ) ) {
 		return $hex;
 	}
+
 	return $default;
 }
 
@@ -748,7 +797,7 @@ function of_sanitize_gradient( $input, $option = array() ) {
  */
 
 function of_recognized_font_sizes() {
-	$sizes = range( 9, 120 );
+	$sizes = range( 1, 120 );
 	$sizes = apply_filters( 'of_recognized_font_sizes', $sizes );
 	$sizes = array_map( 'absint', $sizes );
 	return $sizes;
@@ -808,20 +857,24 @@ function of_recognized_font_styles() {
 
 function of_validate_hex( $hex ) {
 	$hex = trim( $hex );
+
 	/* Strip recognized prefixes. */
 	if ( 0 === strpos( $hex, '#' ) ) {
 		$hex = substr( $hex, 1 );
-	}
-	elseif ( 0 === strpos( $hex, '%23' ) ) {
+	} elseif ( 0 === strpos( $hex, '%23' ) ) {
 		$hex = substr( $hex, 3 );
 	}
+
 	/* Regex match. */
-	if ( 0 === preg_match( '/^[0-9a-fA-F]{6}$/', $hex ) ) {
-		return false;
-	}
-	else {
+	if ( preg_match( '/^[0-9a-fA-F]{6}$/', $hex ) > 0 ) {
 		return true;
 	}
+
+	if ( preg_match( '/^[0-9a-fA-F]{3}$/', $hex ) > 0 ) {
+		return true;
+	}
+
+	return false;
 }
 
 /* Background image */
@@ -941,8 +994,92 @@ function of_sanitize_number( $input, $definition ) {
 	if ( isset( $definition['units'] ) ) {
 		$units = $definition['units'];
 	}
-	$number = The7_Option_Field_Number::sanitize( $input, $units );
+
+	$max = isset( $definition['max'] ) ? (int) $definition['max'] : null;
+	$min = isset( $definition['min'] ) ? (int) $definition['min'] : null;
+
+	$number = The7_Option_Field_Number::sanitize( $input, $units, $min, $max );
 
 	return The7_Option_Field_Number::encode( $number );
 }
 add_filter( 'of_sanitize_number', 'of_sanitize_number', 10, 2 );
+
+/**
+ * Sanitize icons picker.
+ *
+ * Just return a string.
+ *
+ * @since 7.0.0
+ *
+ * @param string $val
+ *
+ * @return string
+ */
+function of_sanitize_icons_picker( $val ) {
+	return (string) $val;
+}
+
+add_filter( 'of_sanitize_icons_picker', 'of_sanitize_icons_picker' );
+
+function of_sanitize_switch( $val, $option ) {
+	$values = array_keys( $option['options'] );
+	$default = isset( $option['std'] ) ? $option['std'] : $values[1];
+
+	if ( $val === false ) {
+		$val = $values[1];
+	}
+
+	return The7_Option_Field_Switch::sanitize( $val, $values, $default );
+}
+
+add_filter( 'of_sanitize_switch', 'of_sanitize_switch', 10, 2 );
+
+/**
+ * Return random double nonce if option value is empty.
+ *
+ * @param string $val Option value.
+ *
+ * @return string
+ */
+function of_sanitize_random_double_nonce( $val = '' ) {
+	if ( ! $val ) {
+		return wp_create_nonce( mt_rand() ) . wp_create_nonce( mt_rand() );
+	}
+
+	return $val;
+}
+add_filter( 'of_sanitize_random_double_nonce', 'of_sanitize_random_double_nonce' );
+
+/**
+ * Sanitize multi select option value.
+ *
+ * @param array $val    Option value.
+ * @param array $option Option definition.
+ *
+ * @return array
+ */
+function of_sanitize_multi_select( $val, $option ) {
+	$options = array();
+	if ( isset( $option['options'] ) ) {
+		$options = (array) $option['options'];
+	}
+	$white_list = array_keys( $options );
+
+	return array_filter( array_intersect( (array) $val, $white_list ) );
+}
+
+add_filter( 'of_sanitize_multi_select', 'of_sanitize_multi_select', 10, 2 );
+
+function of_sanitize_web_fonts( $val, $option ) {
+	$sanitized = The7_Option_Field_Web_Fonts::sanitize($val);
+	return The7_Option_Field_Web_Fonts::encode( $sanitized );
+}
+
+function of_sanitize_font_sizes($input){
+	$options = The7_Option_Field_Font_Sizes::get_fields();
+	foreach ( $options as $field => $default_declaration ) {
+		$options[$field]['id'] = $field;
+	}
+
+	return optionsframework_sanitize_options_values( $options, $input);
+}

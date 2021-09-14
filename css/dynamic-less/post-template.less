@@ -56,7 +56,7 @@ article {
 			.transparent-bg-mixin(@opacity: 15%)
 		}
 	}
-	.content-bg-on:not(.classic-layout-list):not(.centered-layout-list) & {
+	.content-bg-on:not(.classic-layout-list):not(.centered-layout-list):not(.gradient-overlay-layout-list) & {
 		.solid-bg-mixin;
 	}
 	.content-bg-on:not(.classic-layout-list):not(.centered-layout-list):not(.gradient-overlap-layout-list):not(.gradient-overlay-layout-list):not(.content-rollover-layout-list) & {
@@ -92,8 +92,9 @@ article {
 }
 //Gradient overlay blog layout defaults
 .post-entry-content {
-	#page .content-bg-on.gradient-overlay-layout-list & {
-		.solid-bg-mixin;
+	#page .enable-bg-rollover.gradient-overlay-layout-list & {
+		background-color: @project-rollover-bg-color;
+	.background-gradient (@startColor: @project-rollover-bg-color, @endColor: @project-rollover-bg-color-2);
 
 	}
 }
@@ -102,25 +103,56 @@ article {
 
 	.blog-shortcode &,
 	.portfolio-shortcode &,
+	.albums-shortcode &,
 	.owl-carousel.blog-carousel-shortcode & {
-		font: normal @h3-font-variant normal @h3-font-size~"/"@h3-line-height @h3-font-family;
+		font: normal @h3-font-variant normal @h3-font-size-desktop~"/"@h3-line-height-desktop @h3-font-family;
+		@media (max-width: @lg-breakpoint - 1) {
+			font-size: @h3-font-size-tablet;
+			line-height: @h3-line-height-tablet;
+		}
+		@media (max-width: @md-breakpoint - 1) {
+			font-size: @h3-font-size-mobile;
+			line-height: @h3-line-height-mobile;
+		}
 		.mode-masonry&,
 		.mode-grid&,
 		.blog-carousel-shortcode&,
-		.portfolio-carousel-shortcode& {
-			font: normal @h4-font-variant normal @h4-font-size~"/"@h4-line-height @h4-font-family;
+		.portfolio-carousel-shortcode&,
+		.albums-carousel-shortcode& {
+			font: normal @h4-font-variant normal @h4-font-size-desktop~"/"@h4-line-height-desktop @h4-font-family;
+			@media (max-width: @lg-breakpoint - 1) {
+				font-size: @h4-font-size-tablet;
+				line-height: @h4-line-height-tablet;
+			}
+			@media (max-width: @md-breakpoint - 1) {
+				font-size: @h4-font-size-mobile;
+				line-height: @h4-line-height-mobile;
+			}
 		}
 		& a {
 			.header-color;
+		}
+	}
+}
+
+.entry-title {
+
+	.blog-shortcode &,
+	.portfolio-shortcode:not(.gradient-overlay-layout-list):not(.content-rollover-layout-list) &,
+	.albums-shortcode &,
+	.owl-carousel.blog-carousel-shortcode & {
+		& a {
 			&:hover {
 				.color-accent;
 			}
 		}
 	}
 }
+
 .entry-meta {
 	.blog-shortcode &,
 	.portfolio-shortcode &,
+	.albums-shortcode &,
 	.owl-carousel & {
 		.text-small;
 		.color-base-transparent;
@@ -129,6 +161,7 @@ article {
 .entry-excerpt {
 	.blog-shortcode &,
 	.portfolio-shortcode &,
+	.albums-shortcode &,
 	.owl-carousel & {
 		.text-normal;
 	}
@@ -177,8 +210,16 @@ article {
 .slider-wrapper .post h2.entry-title,
 .rollover-content h2.entry-title {
 	color: @h4-color;
-	font: @h4-font-style @h4-font-variant @h4-font-weight @h4-font-size~"/"@h4-line-height @h4-font-family;
+	font: @h4-font-style @h4-font-variant @h4-font-weight @h4-font-size-desktop~"/"@h4-line-height-desktop @h4-font-family;
 	text-transform: @h4-text-transform;
+	@media (max-width: @lg-breakpoint - 1) {
+		font-size: @h4-font-size-tablet;
+		line-height: @h4-line-height-tablet;
+	}
+	@media (max-width: @md-breakpoint - 1) {
+		font-size: @h4-font-size-mobile;
+		line-height: @h4-line-height-mobile;
+	}
 }
 .post h2.entry-title,
 .post h2.entry-title {
@@ -187,8 +228,22 @@ article {
 .description-under-image .post .entry-title a:hover,
 .post .blog-content .entry-title a:hover,
 .project-list-content .entry-title a:hover {
-	.color-accent;
+	//.color-accent;
+	color: @accent-bg-color;
+	.accent-gradient & {
+		.text-gradient (@startColor: @accent-bg-color, @endColor: @accent-text-color-2);
+	}
+	.wf-container-footer &,
+	.accent-gradient .footer &  {
+		.custom-mixin-footer-color (@widget-footer-accent-color);
+	}
 }
+
+article.product-category .woocom-list-content .entry-title a:hover .count {
+	color: var(--the7-title-color);
+    background: none;
+}
+
 /* #Blog
 ================================================== */
 
@@ -207,9 +262,13 @@ article {
 //Portfolio
 .project-links-container {
 	.portfolio-shortcode & {
-		& a span,
-		& a:hover span {
+		& a:not(:hover) span {
 			color: @accent-bg-color;
+		}
+		& a:hover span {
+			.dt-icon-hover-on& {
+				color: @accent-bg-color;
+			}
 		}
 		&:before,
 		&:after {

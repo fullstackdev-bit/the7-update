@@ -42,7 +42,6 @@
 		height: 40px;
 		opacity: 0;
 		visibility: hidden;
-		-webkit-transition: opacity 400ms ease;
 		transition:      opacity 400ms ease;
 	}
 }
@@ -102,7 +101,6 @@
 			top: 0;
 			width: 40px;
 			height: 40px;
-			-webkit-transition: opacity 400ms ease;
 			transition:      opacity 400ms ease;
 		}
 	}
@@ -152,7 +150,6 @@
 	.owl-next i {
 		.arrows-light & {
 			background: #fff !important;
-			-webkit-box-shadow: 0 6px 18px rgba(0,0,0,0.1);
 			box-shadow: 0 6px 18px rgba(0,0,0,0.1);
 			.static-border-radius;
 		}
@@ -160,7 +157,6 @@
 	.owl-prev:not(.disabled):hover i,
 	.owl-next:not(.disabled):hover i {
 		.arrows-light & {
-			-webkit-box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15);
 			box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15);
 		}
 	}
@@ -252,7 +248,6 @@
 		z-index: 100;
 		background-color: rgba(0, 0, 0, 0.4);
 		.static-border-radius;
-		-webkit-transition: opacity 400ms ease;
 		transition:      opacity 400ms ease;
 		&:hover {
 			opacity: 0.7;
@@ -349,7 +344,10 @@
 //Bullets
 .slider-content {
 	.widget & {
-		margin-bottom: 40px;
+		margin-bottom: 25px;
+	}
+	.widget_presscore-team & {
+		margin-bottom: 17px;
 	}
 }
 .slider-content .owl-dots {
@@ -360,7 +358,10 @@
 	height: auto;
 	text-align: center;
 	.widget & {
-		top: calc(100% ~"+" 0px);
+		top: 100%;
+	}
+	.widget_presscore-testimonials-slider & {
+		top: calc(100% ~"+" 8px);
 	}
 }
 
@@ -380,7 +381,6 @@
 		margin: 0 5px;
 		vertical-align: middle;
 		background-color: transparent;
-		-webkit-transition: box-shadow 0.3s ease;
 		transition: box-shadow 0.3s ease;
 	}
 
@@ -393,5 +393,9 @@
 .gallery-carousel-shortcode .post {
 	.align-content(@align: center);
 	.justify-content(@justify: center);
+}
+.slider-wrapper .blog-media {
+	-ms-flex: 0 0 auto;
+	display: block;
 }
 /* Shortcode slider:end */

@@ -8,16 +8,22 @@ if ( ! function_exists( 'presscore_header_inline_style' ) ) :
 	 * @since 3.0.0
 	 */
 	function presscore_header_inline_style() {
+		if ( ! the7_is_transparent_header() ) {
+			return;
+		}
+
 		$config = presscore_config();
 
-		if (
-			in_array( $config->get( 'header_title' ), array( 'fancy', 'slideshow', 'disabled' ) )
-			&& 'transparent' === $config->get( 'header_background' ) 
-			&& ! presscore_header_layout_is_side()
-		) {
-			$transparent_bg_color = dt_stylesheet_color_hex2rgba( $config->get( 'header.transparent.background.color' ), $config->get( 'header.transparent.background.opacity' ) );
-			echo ' style="background-color: ' . esc_attr( $transparent_bg_color ) . ';"';
+		$color = $config->get( 'header.transparent.background.color' );
+		if ( ! $color ) {
+			return;
 		}
+
+		$transparent_bg_color = dt_stylesheet_color_hex2rgba(
+			$color,
+			$config->get( 'header.transparent.background.opacity' )
+		);
+		echo ' style="background-color: ' . esc_attr( $transparent_bg_color ) . ';"';
 	}
 
 endif;
@@ -30,16 +36,50 @@ if ( ! function_exists( 'presscore_top_bar_inline_style' ) ) :
 	 * @since 3.0.0
 	 */
 	function presscore_top_bar_inline_style() {
+		if ( ! the7_is_transparent_header() ) {
+			return;
+		}
+
 		$config = presscore_config();
 
-		if (
-			in_array( $config->get( 'header_title' ), array( 'fancy', 'slideshow', 'disabled' ) )
-			&& 'transparent' === $config->get( 'header_background' ) 
-			&& ! presscore_header_layout_is_side()
-		) {
-			$transparent_top_bar_bg_color = dt_stylesheet_color_hex2rgba( $config->get( 'top_bar.transparent.background.color' ), $config->get( 'top_bar.transparent.background.opacity' ) );
-			echo ' style="background-color: ' . esc_attr( $transparent_top_bar_bg_color ) . ';"';
+		$color = $config->get( 'top_bar.transparent.background.color' );
+		if ( ! $color ) {
+			return;
 		}
+
+		$transparent_top_bar_bg_color = dt_stylesheet_color_hex2rgba(
+			$color,
+			$config->get( 'top_bar.transparent.background.opacity' )
+		);
+		echo ' style="background-color: ' . esc_attr( $transparent_top_bar_bg_color ) . ';"';
+	}
+
+endif;
+
+if ( ! function_exists( 'the7_is_transparent_header' ) ) {
+
+	function the7_is_transparent_header() {
+		$config = presscore_config();
+
+		$one_title = in_array( $config->get( 'header_title' ), array( 'fancy', 'slideshow', 'disabled' ) );
+		$one_bg    = 'transparent' === $config->get( 'header_background' );
+		$supports  = presscore_header_supports_transparent_background();
+
+		return $supports && $one_title && $one_bg;
+	}
+
+}
+
+if ( ! function_exists( 'presscore_header_supports_transparent_background' ) ) :
+
+	/**
+	 * Return true if current header support transparency.
+	 *
+	 * @since 7.4.3
+	 * @return boolean
+	 */
+	function presscore_header_supports_transparent_background() {
+		return ! in_array( presscore_config()->get( 'header.layout' ), array( 'side', 'side_line', 'menu_icon' ) );
 	}
 
 endif;
@@ -115,6 +155,15 @@ if ( ! function_exists( 'presscore_get_header_class' ) ) :
 				break;
 		}
 
+		if (
+			$config->get( 'header.transparent.color_scheme' ) === 'light'
+			&& ! presscore_header_layout_is_side()
+			&& $config->get( 'header_background' ) === 'transparent'
+			&& in_array( $config->get( 'page_title.background.mode' ), array( 'background', 'gradient', '__fancy' ) )
+		) {
+			$classes[] = 'light-preset-color';
+		}
+
 		switch ( $config->get( 'header.menu.background.style' ) ) {
 			case 'content_line':
 				$classes[] = 'content-width-line';
@@ -136,7 +185,7 @@ if ( ! function_exists( 'presscore_get_header_class' ) ) :
 			$classes[] = 'widgets';
 		}
 
-		if ( 'none' !== $config->get( 'header.menu.decoration.style' ) && $config->get_bool( 'header.menu.decoration.style.other.links.is_justified' ) ) {
+		if ( $config->get_bool( 'header.menu.decoration.style.other.links.is_justified' ) ) {
 			$classes[] = 'full-height';
 		}
 
@@ -161,7 +210,7 @@ if ( ! function_exists( 'presscore_get_header_class' ) ) :
 		}
 
 		$classes[] = presscore_header_get_decoration_class( $config->get( 'header.decoration' ) );
-
+		$classes[] = presscore_mobile_header_get_decoration_class( $config->get( 'header.mobile.decoration' ) );
 		if ( in_array( $config->get( 'header.layout' ), array( 'side', 'top_line', 'side_line', 'menu_icon' ) ) ) {
 			$classes[] = presscore_array_value( $config->get( 'header.layout.side.menu.submenu.position' ), array(
 				'side' => 'sub-sideways',
@@ -171,22 +220,95 @@ if ( ! function_exists( 'presscore_get_header_class' ) ) :
 
 		if ( in_array( $config->get( 'header.layout' ), array( 'top_line', 'side_line', 'menu_icon' ) ) ) {
 			$classes[] = presscore_array_value( $config->get( 'header.mixed.menu_icon.size' ), array(
+				'small' => 'small-menu-icon',
 				'medium' => 'medium-menu-icon',
 				'large' => 'large-menu-icon',
+				'type_1' => 'x-move-icon',
+				'type_2' => 'two-line-menu-icon',
+				'type_3' => 'animate-color-menu-icon',
+				
+				'type_4' => 'animate-position-menu-icon',
+				'type_5' => 'animate-position-2-menu-icon',
+				'type_6' => 'thin-lines-menu-icon',
+				'type_7' => 'fade-menu-icon',
+				'type_8' => 'dots-menu-icon',
+				'h_dots' => 'h-dots-menu-icon',
+				'type_9' => 'type-9-menu-icon',
+				'type_10' => 'dot-menu-icon',
 			) );
+			
+			
+			$classes[] = presscore_array_value( $config->get( 'header.mixed.menu-close_icon.position' ), array(
+				'left' => 'left-menu-close-icon',
+				'right' => 'right-menu-close-icon',
+				'center' => 'center-menu-close-icon',
+			) );
+			$classes[] = presscore_array_value( $config->get( 'header.hamburger.caption' ), array(
+				'left' => 'left-caption',
+				'right' => 'right-caption',
+			) );
+			$classes[] = presscore_array_value( $config->get( 'header.close.hamburger.caption' ), array(
+				'left' => 'menu-close-left-caption',
+				'right' => 'menu-close-right-caption',
+			) );
+			$classes[] = presscore_array_value( $config->get( 'header.hamburger.bg' ), array(
+				'enabled' => 'hamburger-bg-enable',
+				'disabled' => 'hamburger-bg-disable',
+			) );
+			$classes[] = presscore_array_value( $config->get( 'header.hamburger.bg.hover' ), array(
+				'enabled' => 'hamburger-bg-hover-enable',
+				'disabled' => 'hamburger-bg-hover-disable',
+			) );
+			$classes[] = presscore_array_value( $config->get( 'header.hamburger.border' ), array(
+				'enabled' => 'hamburger-border-enable',
+				'disabled' => 'hamburger-border-disable',
+			) );
+			$classes[] = presscore_array_value( $config->get( 'header.hamburger.border.hover' ), array(
+				'enabled' => 'hamburger-border-hover-enable',
+				'disabled' => 'hamburger-border-hover-disable',
+			) );
+			
 		}
 		$classes[] = presscore_array_value( $config->get( 'header.mobile.menu_icon.size' ), array(
 			'medium' => 'medium-mobile-menu-icon',
 			'small' => 'small-mobile-menu-icon',
+			'large' => 'large-mobile-menu-icon',
+			'type_1' => 'x-move-mobile-icon',
+			'type_2' => 'two-line-mobile-menu-icon',
+			'type_3' => 'animate-color-mobile-menu-icon',
+			'type_4' => 'animate-position-mobile-menu-icon',
+			'type_5' => 'animate-position-2-mobile-menu-icon',
+			'type_6' => 'thin-lines-mobile-menu-icon',
+			'type_7' => 'fade-mobile-menu-icon',
+			'type_8' => 'dots-mobile-menu-icon',
+			'h_dots' => 'h-dots-mobile-menu-icon',
+			'type_9' => 'type-9-mobile-menu-icon',
+			'type_10' => 'dot-mobile-menu-icon',
 		) );
-		
-		
+		$classes[] = presscore_array_value( $config->get( 'header.mobile.hamburger.caption' ), array(
+			'left' => 'mobile-left-caption',
+			'right' => 'mobile-right-caption',
+		) );
 		if ( $config->get( 'header.mobile.menu_icon.bg.enable' )) {
 			$classes[] = 'mobile-menu-icon-bg-on';
 		}
+		if ( $config->get( 'header.mobile.menu_icon.hover.bg.enable' )) {
+			$classes[] = 'mobile-menu-icon-hover-bg-on';
+		}
+		$classes[] = presscore_array_value( $config->get( 'header.mobile.menu_icon.border.enable' ), array(
+			'enabled' => 'mobile-menu-icon-border-enable',
+		) );
+		$classes[] = presscore_array_value( $config->get( 'header.mobile.menu_icon.hover.border.enable' ), array(
+			'enabled' => 'mobile-menu-icon-hover-border-enable',
+		) );
 
 		if ( $config->get( 'header.menu.submenu.parent_clickable' ) ) {
 			$classes[] = 'dt-parent-menu-clickable';
+		}
+		if ( $config->get( 'header.menu.submenu.display' ) === 'hover' || $config->get( 'header.menu.submenu.parent_clickable' )) {
+			$classes[] = 'show-sub-menu-on-hover';
+		}else{
+			$classes[] = 'show-sub-menu-on-click';
 		}
 
 		$classes = apply_filters( 'presscore_header_class', $classes, $class );
@@ -289,8 +411,26 @@ if ( ! function_exists( 'presscore_render_header_elements' ) ) :
 					case 'working_hours':
 						presscore_top_bar_contact_element('clock');
 						break;
+					case 'multipurpose_1':
+						presscore_top_bar_contact_element('multipurpose_1');
+						break;
+					case 'multipurpose_2':
+						presscore_top_bar_contact_element('multipurpose_2');
+						break;
+					case 'multipurpose_3':
+						presscore_top_bar_contact_element('multipurpose_3');
+						break;
+					case 'multipurpose_4':
+						presscore_top_bar_contact_element('multipurpose_4');
+						break;
 					case 'info':
 						presscore_top_bar_contact_element('info');
+						break;
+					case 'button':
+						presscore_top_bar_button_element('header-elements-button-1');
+						break;
+					case 'button-2':
+						presscore_top_bar_button_element('header-elements-button-2');
 						break;
 				}
 
@@ -373,10 +513,28 @@ if ( ! function_exists( 'presscore_top_bar_menu_element' ) ) :
 	 */
 	function presscore_top_bar_menu_element() {
 		$classes = presscore_get_mini_widget_class( 'header-elements-menu' );
-		$classes[] = ( 'list' == of_get_option( 'header-elements-menu-style' ) ? 'list-type-menu' : 'select-type-menu' );
-		$classes[] = ( 'list' == of_get_option( 'header-elements-menu-style-first-switch' ) ? 'list-type-menu-first-switch' : 'select-type-menu-first-switch' );
-		$classes[] = ( 'list' == of_get_option( 'header-elements-menu-style-second-switch' ) ? 'list-type-menu-second-switch' : 'select-type-menu-second-switch' );
-		presscore_nav_menu_list( 'top', $classes );
+		$classes[] = ( 'list' === of_get_option( 'header-elements-menu-style' ) ? 'list-type-menu' : 'select-type-menu' );
+		$classes[] = ( 'list' === of_get_option( 'header-elements-menu-style-first-switch' ) ? 'list-type-menu-first-switch' : 'select-type-menu-first-switch' );
+		$classes[] = ( 'list' === of_get_option( 'header-elements-menu-style-second-switch' ) ? 'list-type-menu-second-switch' : 'select-type-menu-second-switch' );
+
+		$widget_icon = '';
+		if ( of_get_option( 'header-elements-menu-icon' ) === 'custom' ) {
+			$widget_icon = '<i class=" ' . esc_attr( of_get_option( 'header-elements-menu_custom-icon' ) ) . '"></i>';
+		}
+
+		$extended_menu = new The7_Extended_Microwidgets_Menu();
+		$extended_menu->add_hooks();
+
+		presscore_nav_menu_list(
+			'top',
+			array(
+				'menu_wrap_class' => $classes,
+				'before_menu_name' => $widget_icon,
+				'submenu_class' => 'mini-sub-nav',
+			)
+		);
+
+		$extended_menu->remove_hooks();
 	}
 
 endif;
@@ -390,10 +548,28 @@ if ( ! function_exists( 'presscore_top_bar_menu2_element' ) ) :
 	 */
 	function presscore_top_bar_menu2_element() {
 		$classes = presscore_get_mini_widget_class( 'header-elements-menu2' );
-		$classes[] = ( 'list' == of_get_option( 'header-elements-menu2-style' ) ? 'list-type-menu' : 'select-type-menu' );
-		$classes[] = ( 'list' == of_get_option( 'header-elements-menu2-style-first-switch' ) ? 'list-type-menu-first-switch' : 'select-type-menu-first-switch' );
-		$classes[] = ( 'list' == of_get_option( 'header-elements-menu2-style-second-switch' ) ? 'list-type-menu-second-switch' : 'select-type-menu-second-switch' );
-		presscore_nav_menu_list( 'header_microwidget2', $classes );
+		$classes[] = ( 'list' === of_get_option( 'header-elements-menu2-style' ) ? 'list-type-menu' : 'select-type-menu' );
+		$classes[] = ( 'list' === of_get_option( 'header-elements-menu2-style-first-switch' ) ? 'list-type-menu-first-switch' : 'select-type-menu-first-switch' );
+		$classes[] = ( 'list' === of_get_option( 'header-elements-menu2-style-second-switch' ) ? 'list-type-menu-second-switch' : 'select-type-menu-second-switch' );
+
+		$widget_icon = '';
+		if ( of_get_option( 'header-elements-menu2-icon' ) === 'custom' ) {
+			$widget_icon = '<i class=" ' . esc_attr( of_get_option( 'header-elements-menu2_custom-icon' ) ) . '"></i>';
+		}
+
+		$extended_menu = new The7_Extended_Microwidgets_Menu();
+		$extended_menu->add_hooks();
+
+		presscore_nav_menu_list(
+			'header_microwidget2',
+			array(
+				'menu_wrap_class' => $classes,
+				'before_menu_name' => $widget_icon,
+				'submenu_class' => 'mini-sub-nav',
+			)
+		);
+
+		$extended_menu->remove_hooks();
 	}
 
 endif;
@@ -403,22 +579,48 @@ if ( ! function_exists( 'presscore_top_bar_contact_element' ) ) :
 	/**
 	 * Render contact information element.
 	 *
+	 * @param string $el Element to render.
+	 *
 	 * @since 1.0.0
 	 */
 	function presscore_top_bar_contact_element( $el ) {
-		$el_id = 'header-elements-contact-' . $el;
-		$caption = of_get_option( $el_id . '-caption' );
+		$option_name = 'header-elements-contact-' . $el;
 
-		if ( $caption ) {
-			$class = array( 'mini-contacts ' . $el );
+		$icon = '';
+		if ( of_get_option( $option_name . '-icon' ) === 'custom' ) {
+			$icon = '<i class="fa-fw ' . esc_attr( of_get_option( $option_name . '-custom-icon' ) ) . '"></i>';
+		}
 
-			if ( ! of_get_option( $el_id . '-icon', true ) ) {
-				$class[] = 'mini-icon-off';
-			}
+		$caption = wp_kses_post( (string) of_get_option( $option_name . '-caption' ) );
+		$caption = $icon . $caption;
 
-			$class = presscore_get_mini_widget_class( $el_id, $class );
+		if ( ! $caption ) {
+			return;
+		}
 
-			echo '<span class="' . implode( ' ', $class ) . '">' . $caption . '</span>';
+		$classes = [ 'mini-contacts ' . $el ];
+
+		if ( ! of_get_option( $option_name . '-icon', true ) ) {
+			$classes[] = 'mini-icon-off';
+		}
+
+		$classes = presscore_get_mini_widget_class( $option_name, $classes );
+		$class   = implode( ' ', $classes );
+
+		$href = of_get_option( $option_name . '-url' );
+		if ( $href ) {
+			printf(
+				'<a href="%s" class="%s">%s</a>',
+				esc_attr( $href ),
+				esc_attr( $class ),
+				$caption // phpcs:ignore: WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped above.
+			);
+		} else {
+			printf(
+				'<span class="%s">%s</span>',
+				esc_attr( $class ),
+				$caption // phpcs:ignore: WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped above.
+			);
 		}
 	}
 
@@ -452,9 +654,86 @@ if ( ! function_exists( 'presscore_top_bar_search_element' ) ) :
 	 */
 	function presscore_top_bar_search_element() {
 		$classes = presscore_get_mini_widget_class( 'header-elements-search', 'mini-search' );
+		switch ( of_get_option( 'microwidgets-search_style') ) {
+			case 'classic':
+				$classes[] = 'classic-search';
+				break;
+			case 'popup':
+				$classes[] = 'popup-search';
+				break;
+			case 'overlay':
+				$classes[] = 'overlay-search';
+				break;
+			case 'animate_width':
+				$classes[] = 'animate-search-width';
+				break;
+		}
+		switch ( of_get_option( 'microwidgets-search_icon') ) {
+			case 'default':
+				$classes[] = 'default-icon';
+				break;
+			case 'custom':
+				$classes[] = 'custom-icon';
+				break;
+		}
 		echo '<div class="' . implode( ' ', $classes ) . '">';
 			presscore_get_template_part( 'theme', 'header/searchform' );
 		echo '</div>';
+	}
+
+endif;
+
+if ( ! function_exists( 'presscore_top_bar_button_element' ) ) :
+
+	/**
+	 * Render header button mini widget.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param string $opt_id
+	 */
+	function presscore_top_bar_button_element( $opt_id = 'header-elements-button' ) {
+		$classes = presscore_get_mini_widget_class( $opt_id, 'mini-button ' . $opt_id );
+
+		if ( of_get_option( $opt_id . '-smooth-scroll' ) ) {
+			$classes[] = 'anchor-link';
+		}
+		if ( of_get_option( $opt_id . '-bg' ) !== 'disabled' ) {
+			$classes[] = 'microwidget-btn-bg-on';
+		}
+		if ( of_get_option( $opt_id . '-hover-bg' ) !== 'disabled' ) {
+			$classes[] = 'microwidget-btn-hover-bg-on';
+		}
+		if ( of_get_option( $opt_id . '-bg' ) === of_get_option( $opt_id . '-hover-bg' ) ) {
+			$classes[] = 'disable-animation-bg';
+		}
+		$classes[] = presscore_array_value( of_get_option( "{$opt_id}-border-color" ), array(
+			'accent'   => 'border-on',
+			'color'    => 'border-on',
+			'disabled' => 'border-off',
+		) );
+		$classes[] = presscore_array_value( of_get_option( "{$opt_id}-hover-border-color" ), array(
+			'accent'   => 'hover-border-on',
+			'color'    => 'hover-border-on',
+			'disabled' => 'hover-border-off',
+		) );
+		$btn_icon  = '';
+		if ( of_get_option( $opt_id . '-icon' ) ) {
+			$btn_icon = '<i class="' . of_get_option( $opt_id . '-choose-icon' ) . '"></i>';
+		}
+		$btn_target = '';
+		if ( of_get_option( $opt_id . '-target' ) ) {
+			$btn_target = 'target="_blank"';
+		}
+		$caption     = of_get_option( $opt_id . '-name' );
+		$button_link = of_get_option( $opt_id . '-url' ) ? of_get_option( $opt_id . '-url' ) : '';
+		if ( of_get_option( $opt_id . '-icon-position' ) === 'right' ) {
+			$classes[] = 'btn-icon-align-right';
+			echo '<a href="' . esc_attr( $button_link ) . '" class="microwidget-btn ' . implode( ' ', $classes ) . '" ' . $btn_target . '><span>' . esc_html( $caption ) . '</span>' . $btn_icon . '</a>';
+		} else {
+			$classes[] = 'btn-icon-align-left';
+			echo '<a href="' . esc_attr( $button_link ) . '" class="microwidget-btn ' . implode( ' ', $classes ) . '" ' . $btn_target . '>' . $btn_icon . '<span>' . esc_html( $caption ) . '</span></a>';
+		}
 	}
 
 endif;
@@ -525,10 +804,12 @@ if ( ! function_exists( 'presscore_get_topbar_social_icons' ) ) :
 			}
 
 			$icon = $saved_icon['icon'];
+			// translators: %s : icon name
+			$icon_title = sprintf( __( '%s page opens in new window', 'the7mk2' ), $icons_data[ $icon ] );
 
 			$clean_icons[] = array(
 				'icon'  => $icon,
-				'title' => $icons_data[ $icon ],
+				'title' => $icon_title,
 				'link'  => $saved_icon['url']
 			);
 		}
@@ -594,10 +875,14 @@ if ( ! function_exists( 'pressocore_render_login_form' ) ) :
 
 		$class = array( 'submit' );
 
-		if ( ! $config->get( 'header.elements.login.icon.enabled' ) ) {
+		if ( ! $config->get( 'header.elements.login.icon.enabled' ) == 'custom' ) {
 			$class[] = 'mini-icon-off';
 		} else if ( ! $caption ) {
 			$class[] = 'text-disable';
+		}
+		$widget_icon = "";
+		if($config->get( 'header.elements.login.icon.enabled' ) == 'custom'){
+			$widget_icon = '<i class="' . of_get_option( 'header-elements-login-custom-icon' ) . '"></i>';
 		}
 
 		if ( ! $caption ) {
@@ -606,7 +891,7 @@ if ( ! function_exists( 'pressocore_render_login_form' ) ) :
 
 		$classes = presscore_get_mini_widget_class( 'header-elements-login', 'mini-login' );
 
-		echo '<div class="' . implode( ' ', $classes ) . '"><a href="' . esc_url( $login_link ) .'" class="' . presscore_esc_implode( ' ', $class ) .'">' . esc_html( $caption ) . '</a></div>';
+		echo '<div class="' . implode( ' ', $classes ) . '"><a href="' . esc_url( $login_link ) .'" class="' . presscore_esc_implode( ' ', $class ) .'">' . $widget_icon . esc_html( $caption ) . '</a></div>';
 	}
 
 endif;
@@ -644,11 +929,22 @@ if ( ! function_exists( 'presscore_get_mixed_header_class' ) ) :
 				break;
 			case 'top_line':
 				$classes[] = 'side-header-h-stroke';
+
+				if (
+					$config->get( 'header.transparent.color_scheme' ) === 'light'
+					&& $config->get( 'header_background' ) === 'transparent'
+					&& in_array( $config->get( 'page_title.background.mode' ), array( 'background', 'gradient', '__fancy' ) )
+				) {
+					$classes[] = 'light-preset-color';
+				}
 				if ( dt_sanitize_flag( $config->get( 'header.mixed.view.top_line.is_fullwidth' ) ) ) {
 					$classes[] = 'full-width';
 				}
 				if ( dt_sanitize_flag( $config->get( 'header.mixed.view.top_line.is_sticky' ) ) ) {
 					$classes[] = 'sticky-top-line';
+				}
+				if ( dt_sanitize_flag( $config->get( 'header.mixed.floating_top-bar.enabled' ) ) ) {
+					$classes[] = 'mixed-floating-top-bar';
 				}
 				$logo_pos = $config->get( 'header.mixed.view.top_line.logo.position' );
 				if ( 'center' == $logo_pos ) {
@@ -660,6 +956,7 @@ if ( ! function_exists( 'presscore_get_mixed_header_class' ) ) :
 				}else if ( 'left_btn-center_logo' == $logo_pos ) {
 					$classes[] = 'logo-center left-menu-toggle';
 				}
+
 				break;
 			case 'menu_icon':
 			default:
@@ -675,16 +972,112 @@ if ( ! function_exists( 'presscore_get_mixed_header_class' ) ) :
 
 		if ( in_array( $config->get( 'header.layout' ), array( 'top_line', 'side_line', 'menu_icon' ) ) ) {
 			$classes[] = presscore_array_value( $config->get( 'header.mixed.menu_icon.size' ), array(
+				'small' => 'small-menu-icon',
 				'medium' => 'medium-menu-icon',
 				'large' => 'large-menu-icon',
+				'type_1' => 'x-move-icon',
+				'type_2' => 'two-line-menu-icon',
+				'type_3' => 'animate-color-menu-icon',
+
+				'type_4' => 'animate-position-menu-icon',
+				'type_5' => 'animate-position-2-menu-icon',
+				'type_6' => 'thin-lines-menu-icon',
+				'type_7' => 'fade-menu-icon',
+				'type_8' => 'dots-menu-icon',
+				'h_dots' => 'h-dots-menu-icon',
+				'type_9' => 'type-9-menu-icon',
+				'type_10' => 'dot-menu-icon',
 			) );
+
+			$classes[] = presscore_array_value( $config->get( 'header.mixed.menu-close_icon.position' ), array(
+				'left' => 'left-menu-close-icon',
+				'right' => 'right-menu-close-icon',
+				'center' => 'center-menu-close-icon',
+			) );
+			// $classes[] = presscore_array_value( $config->get( 'header.mixed.menu-close_icon.size' ), array(
+
+			// 	'minus-medium' => 'medium-menu-close-icon',
+			// 	'fade_medium' => 'fade-medium-menu-close-icon',
+			// 	'rotate_medium' => 'rotate-medium-menu-close-icon',
+			// 	'fade_big' => 'fade-big-menu-close-icon',
+			// 	'fade_thin'=> 'fade-thin-menu-close-icon',
+			// 	'fade_small' => 'fade-small-menu-close-icon',
+			// 	'v_dots' => 'v-dots-menu-close-icon',
+			// 	'h_dots' => 'h-dots-menu-close-icon',
+			// 	'scale_dot' => 'scale-dot-menu-close-icon',
+			// ) );
+			$classes[] = presscore_array_value( $config->get( 'header.hamburger.caption' ), array(
+				'left' => 'left-caption',
+				'right' => 'right-caption',
+			) );
+			$classes[] = presscore_array_value( $config->get( 'header.close.hamburger.caption' ), array(
+				'left' => 'menu-close-left-caption',
+				'right' => 'menu-close-right-caption',
+			) );
+			$classes[] = presscore_array_value( $config->get( 'header.hamburger.bg' ), array(
+				'enabled' => 'hamburger-bg-enable',
+				'disabled' => 'hamburger-bg-disable',
+			) );
+			$classes[] = presscore_array_value( $config->get( 'header.hamburger.bg.hover' ), array(
+				'enabled' => 'hamburger-bg-hover-enable',
+				'disabled' => 'hamburger-bg-hover-disable',
+			) );
+			$classes[] = presscore_array_value( $config->get( 'header.hamburger.border' ), array(
+				'enabled' => 'hamburger-border-enable',
+				'disabled' => 'hamburger-border-disable',
+			) );
+			$classes[] = presscore_array_value( $config->get( 'header.hamburger.border.hover' ), array(
+				'enabled' => 'hamburger-border-hover-enable',
+				'disabled' => 'hamburger-border-hover-disable',
+			) );
+		
 		}
 		$classes[] = presscore_array_value( $config->get( 'header.mobile.menu_icon.size' ), array(
 			'medium' => 'medium-mobile-menu-icon',
 			'small' => 'small-mobile-menu-icon',
+			'large' => 'large-mobile-menu-icon',
+			'type_1' => 'x-move-mobile-icon',
+			'type_2' => 'two-line-mobile-menu-icon',
+			'type_3' => 'animate-color-mobile-menu-icon',
+			'type_4' => 'animate-position-mobile-menu-icon',
+			'type_5' => 'animate-position-2-mobile-menu-icon',
+			'type_6' => 'thin-lines-mobile-menu-icon',
+			'type_7' => 'fade-mobile-menu-icon',
+			'type_8' => 'dots-mobile-menu-icon',
+			'h_dots' => 'h-dots-mobile-menu-icon',
+			'type_9' => 'type-9-mobile-menu-icon',
+			'type_10' => 'dot-mobile-menu-icon',
 		) );
+        $classes[] = presscore_array_value( $config->get( 'header.mobile.hamburger.caption' ), array(
+			'left' => 'mobile-left-caption',
+			'right' => 'mobile-right-caption',
+		) );
+		
+		if ( $config->get( 'header.mobile.menu_icon.bg.enable' )) {
+			$classes[] = 'mobile-menu-icon-bg-on';
+		}
+		if ( $config->get( 'header.mobile.menu_icon.hover.bg.enable' )) {
+			$classes[] = 'mobile-menu-icon-hover-bg-on';
+		}
+		$classes[] = presscore_array_value( $config->get( 'header.mobile.menu_icon.border.enable' ), array(
+			'enabled' => 'mobile-menu-icon-border-enable',
+		) );
+		$classes[] = presscore_array_value( $config->get( 'header.mobile.menu_icon.hover.border.enable' ), array(
+			'enabled' => 'mobile-menu-icon-hover-border-enable',
+		) );
+		
+
+		if ( $config->get( 'header.menu.submenu.parent_clickable' ) ) {
+			$classes[] = 'dt-parent-menu-clickable';
+		}
+		if ( $config->get( 'header.menu.submenu.display' ) === 'hover') {
+			$classes[] = 'show-sub-menu-on-hover';
+		}else{
+			$classes[] = 'show-sub-menu-on-click';
+		}
 
 		$classes[] = presscore_header_get_decoration_class( $config->get( 'header.mixed.decoration' ) );
+		$classes[] = presscore_mobile_header_get_decoration_class( $config->get( 'header.mobile.decoration' ) );
 
 		$classes = apply_filters( 'presscore_mixed_header_class', $classes, $class );
 
@@ -737,6 +1130,29 @@ if ( ! function_exists( 'presscore_header_get_decoration_class' ) ) :
 				return 'shadow-decoration';
 			case 'line':
 				return 'line-decoration';
+			case 'content-width-line':
+				return 'content-width-line-decoration';
+		}
+		return '';
+	}
+
+endif;
+if ( ! function_exists( 'presscore_mobile_header_get_decoration_class' ) ) :
+
+	/**
+	 * Return decoration class based on $style.
+	 * 
+	 * @param  string $style
+	 * @return string
+	 */
+	function presscore_mobile_header_get_decoration_class( $style ) {
+		switch ( $style ) {
+			case 'shadow':
+				return 'shadow-mobile-header-decoration';
+			case 'line':
+				return 'line-mobile-header-decoration';
+			case 'content-width-line':
+				return 'content-width-line-mobile-header-decoration';
 		}
 		return '';
 	}
@@ -751,7 +1167,17 @@ if ( ! function_exists( 'presscore_header_menu_icon' ) ) :
 	 * @since 3.0.0
 	 */
 	function presscore_header_menu_icon() {
-		echo '<div class="menu-toggle"><a href="#">menu</a></div>';
+			$caption_enable = presscore_config()->get( 'header.hamburger.caption' );
+		
+			$caption = presscore_config()->get( 'header.hamburger.caption.text' );
+			$caption_text = esc_html( $caption );
+		
+			echo '<div class="menu-toggle">';
+			if ( $caption_enable != 'disabled' ) {
+			echo '<a class="menu-toggle-caption" href="#">'. $caption .'</a>';
+			}
+			echo '</div>';
+		
 	}
 
 endif;
@@ -865,3 +1291,16 @@ if ( ! function_exists( 'presscore_header_layout_is_mixed' ) ) :
 	}
 
 endif;
+
+/**
+ * Return true if current header is floating top line.
+ *
+ * @since 7.6.0
+ *
+ * @return bool
+ */
+function presscore_is_floating_transparent_top_line_header() {
+	$config = presscore_config();
+
+	return 'top_line' === $config->get( 'header.layout' ) && $config->get_bool( 'header.mixed.view.top_line.is_sticky' );
+}

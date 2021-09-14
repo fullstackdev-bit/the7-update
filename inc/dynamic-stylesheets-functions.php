@@ -1,40 +1,120 @@
 <?php
 /**
  * Dynamic stylesheets functions.
+ *
+ * @package The7
  */
 
-// File Security Check
-if ( ! defined( 'ABSPATH' ) ) { exit; }
+defined( 'ABSPATH' ) || exit;
 
 if ( ! function_exists( 'presscore_get_dynamic_stylesheets_list' ) ) :
 
+	/**
+	 * Return list of dynamic stylesheets.
+	 *
+	 * @return array
+	 */
 	function presscore_get_dynamic_stylesheets_list() {
-
 		static $dynamic_stylesheets = null;
 
 		if ( null === $dynamic_stylesheets ) {
-			$dynamic_stylesheets = array();
+			$dynamic_stylesheets = [];
 
-			$dynamic_stylesheets['dt-custom'] = array(
-				'src' => 'custom.less',
-			);
+			/**
+			 * CSS vars is generated dynamically based on registered less vars.
+			 *
+			 * There is no actual css-vars.less file.
+			 *
+			 * @see presscore_regenerate_dynamic_css
+			 */
+			$dynamic_stylesheets['the7-css-vars'] = [
+				'src' => 'css-vars.less',
+			];
 
-			if ( dt_is_woocommerce_enabled() ) {
-				$dynamic_stylesheets['wc-dt-custom'] = array(
+			$dynamic_import_top = [];
+
+			$dynamic_import_top['gutenberg'] = 'dynamic-less/plugins/gutenberg.less';
+			if ( The7_Admin_Dashboard_Settings::get( 'disable-gutenberg-styles' ) ) {
+				unset( $dynamic_import_top['gutenberg'] );
+			}
+			if ( the7_elementor_is_active() ) {
+				$dynamic_import_top[] = 'dynamic-less/elementor/css-vars.less';
+
+				if ( the7_is_elementor_buttons_integration_enabled() ) {
+					$dynamic_import_top[] = 'dynamic-less/elementor/buttons.less';
+				}
+			}
+
+			$dynamic_import_bottom = [];
+
+			if ( The7_Admin_Dashboard_Settings::get( 'overlapping-headers' ) ) {
+				$dynamic_import_bottom[] = 'legacy/overlap-header.less';
+			}
+			switch ( of_get_option( 'header-layout' ) ) {
+				case 'classic':
+					$dynamic_import_top[]    = 'dynamic-less/header/header-layouts/static/_horizontal-headers.less';
+					$dynamic_import_top[]    = 'dynamic-less/header/header-layouts/static/_classic-header.less';
+					$dynamic_import_bottom[] = 'dynamic-less/header/header-layouts/_horizontal-headers.less';
+					$dynamic_import_bottom[] = 'dynamic-less/header/header-layouts/_classic-header.less';
+					break;
+				case 'inline':
+					$dynamic_import_top[]    = 'dynamic-less/header/header-layouts/static/_horizontal-headers.less';
+					$dynamic_import_top[]    = 'dynamic-less/header/header-layouts/static/_inline-header.less';
+					$dynamic_import_bottom[] = 'dynamic-less/header/header-layouts/_horizontal-headers.less';
+					$dynamic_import_bottom[] = 'dynamic-less/header/header-layouts/_inline-header.less';
+					break;
+				case 'split':
+					$dynamic_import_top[]    = 'dynamic-less/header/header-layouts/static/_horizontal-headers.less';
+					$dynamic_import_top[]    = 'dynamic-less/header/header-layouts/static/_split-header.less';
+					$dynamic_import_bottom[] = 'dynamic-less/header/header-layouts/_horizontal-headers.less';
+					$dynamic_import_bottom[] = 'dynamic-less/header/header-layouts/_split-header.less';
+					break;
+				case 'side':
+					$dynamic_import_top[]    = 'dynamic-less/header/header-layouts/static/_vertical-headers.less';
+					$dynamic_import_bottom[] = 'dynamic-less/header/header-layouts/_vertical-headers.less';
+					break;
+				case 'top_line':
+				case 'side_line':
+				case 'menu_icon':
+					$dynamic_import_top[]    = 'dynamic-less/header/header-layouts/static/_mixed-headers.less';
+					$dynamic_import_top[]    = 'dynamic-less/header/header-layouts/static/_vertical-headers.less';
+					$dynamic_import_bottom[] = 'dynamic-less/header/header-layouts/_mixed-headers.less';
+					$dynamic_import_bottom[] = 'dynamic-less/header/header-layouts/_vertical-headers.less';
+					break;
+				case 'disabled':
+					break;
+			}
+
+			$dynamic_import_bottom[] = 'dynamic-less/plugins/wpbakery.less';
+
+			$dynamic_stylesheets['dt-custom'] = [
+				'src'     => 'custom.less',
+				'imports' => compact( 'dynamic_import_top', 'dynamic_import_bottom' ),
+			];
+
+			if ( the7_is_woocommerce_enabled() ) {
+				$dynamic_stylesheets['wc-dt-custom'] = [
 					'src' => 'compatibility/wc-dt-custom.less',
-				);
+				];
 			}
 
 			if ( presscore_responsive() ) {
-				$dynamic_stylesheets['dt-media'] = array(
+				$dynamic_stylesheets['dt-media'] = [
 					'src' => 'media.less',
-				);
+				];
 			}
 
-			if ( dt_is_legacy_mode() ) {
-				$dynamic_stylesheets['dt-legacy'] = array(
-					'src' => 'legacy.less',
-				);
+			if ( The7_Admin_Dashboard_Settings::get( 'mega-menu' ) ) {
+				$dynamic_stylesheets['the7-mega-menu'] = [
+					'src' => 'mega-menu.less',
+				];
+			}
+
+			if ( The7_Admin_Dashboard_Settings::get( 'rows' ) ) {
+				$dynamic_stylesheets['the7-stripes'] = [
+					'src'          => 'legacy/stripes.less',
+					'auto_enqueue' => false,
+				];
 			}
 		}
 
@@ -50,17 +130,33 @@ if ( ! function_exists( 'presscore_get_dynamic_stylesheets_list' ) ) :
 
 endif;
 
+if ( ! function_exists( 'presscore_get_admin_dynamic_stylesheets_list' ) ) {
+
+	/**
+	 * Return array of admin dynamic css.
+	 *
+	 * @since 7.2.0
+	 *
+	 * @return array
+	 */
+	function presscore_get_admin_dynamic_stylesheets_list() {
+		return array(
+			'the7-admin-custom' => array(
+				'src' => 'admin-custom.less',
+			),
+		);
+	}
+}
+
 if ( ! function_exists( 'presscore_enqueue_dynamic_stylesheets' ) ) :
 
 	/**
 	 * Enqueue *.less files
 	 */
 	function presscore_enqueue_dynamic_stylesheets() {
-		include_once PRESSCORE_CLASSES_DIR . '/less/The7_Dynamic_Stylesheet.php';
-
 		$dynamic_stylesheets = presscore_get_dynamic_stylesheets_list();
-		$css_cache = presscore_get_dynamic_css_cache();
-		$css_version = presscore_get_dynamic_css_version();
+		$css_cache           = presscore_get_dynamic_css_cache();
+		$css_version         = presscore_get_dynamic_css_version();
 
 		foreach ( $dynamic_stylesheets as $handle => $stylesheet ) {
 			$stylesheet_obj = new The7_Dynamic_Stylesheet( $handle, $stylesheet['src'] );
@@ -71,7 +167,11 @@ if ( ! function_exists( 'presscore_enqueue_dynamic_stylesheets' ) ) :
 				$stylesheet_obj->set_css_body( $css_cache[ $handle ] );
 			}
 
-			$stylesheet_obj->enqueue();
+			$stylesheet_obj->register();
+
+			if ( ! isset( $stylesheet['auto_enqueue'] ) || $stylesheet['auto_enqueue'] === true ) {
+				$stylesheet_obj->enqueue();
+			}
 		}
 
 		do_action( 'presscore_enqueue_dynamic_stylesheets' );
@@ -81,20 +181,36 @@ endif;
 
 if ( ! function_exists( 'presscore_regenerate_dynamic_css' ) ) :
 
+	/**
+	 * Generate css from dynamic stylesheets list.
+	 *
+	 * @param array $dynamic_css Dynamic stylesheets list.
+	 */
 	function presscore_regenerate_dynamic_css( $dynamic_css ) {
-		include_once PRESSCORE_EXTENSIONS_DIR . '/less-vars/less-functions.php';
 		include_once PRESSCORE_DIR . '/less-vars.php';
-		include_once PRESSCORE_CLASSES_DIR . '/less/The7_Less_Compiler.php';
-		include_once PRESSCORE_CLASSES_DIR . '/less/The7_Dynamic_Stylesheet.php';
 
 		$wp_upload = wp_get_upload_dir();
-		$less_vars = presscore_compile_less_vars();
-		$lessc = new The7_Less_Compiler( $less_vars );
+		$less_vars_manager = the7_get_new_less_vars_manager();
+		$less_vars = presscore_compile_less_vars( $less_vars_manager );
+		$lessc     = new The7_Less_Compiler( $less_vars );
 
 		// Compile beautiful loading css.
 		$beautiful_loading_css = $lessc->compile_file( The7_Dynamic_Stylesheet::get_theme_css_dir() . '/beautiful-loading.less' );
 		presscore_cache_loader_inline_css( $beautiful_loading_css );
 		unset( $beautiful_loading_css );
+
+		/**
+		 * Generate css vars file.
+		 *
+		 * @see presscore_get_dynamic_stylesheets_list
+		 */
+		if ( isset( $dynamic_css['the7-css-vars']['src'] ) ) {
+			$css_vars_stylesheet = new The7_Dynamic_Stylesheet( 'the7-css-vars', $dynamic_css['the7-css-vars']['src'] );
+			unset( $dynamic_css['the7-css-vars'] );
+
+			$css_vars_file = new The7_CSS_Vars_File( $css_vars_stylesheet->get_css_file() );
+			$css_vars_file->generate_based_on_less_vars( $less_vars_manager->storage()->get_css_vars(), $lessc );
+		}
 
 		if ( $lessc->is_writable( $wp_upload['basedir'] ) ) {
 			update_option( 'presscore_less_css_is_writable', 1 );
@@ -112,7 +228,12 @@ if ( ! function_exists( 'presscore_regenerate_dynamic_css' ) ) :
 					$stylesheet_obj->set_less_file( $stylesheet['path'] );
 				}
 
-				$lessc->compile_to_file( $stylesheet_obj->get_less_file(), $stylesheet_obj->get_css_file() );
+				$imports = empty( $stylesheet['imports'] ) ? array() : $stylesheet['imports'];
+				$lessc->compile_to_file(
+					$stylesheet_obj->get_less_file(),
+					$stylesheet_obj->get_css_file(),
+					$imports
+				);
 			}
 		} else {
 			update_option( 'presscore_less_css_is_writable', 0 );
@@ -134,18 +255,59 @@ if ( ! function_exists( 'presscore_regenerate_dynamic_css' ) ) :
 
 endif;
 
+function the7_generate_dynamic_css_as_text( $dynamic_css ) {
+	include_once PRESSCORE_DIR . '/less-vars.php';
+
+	$less_vars = presscore_compile_less_vars();
+	$lessc     = new The7_Less_Compiler( $less_vars );
+
+	$dynamic_css_cache = array();
+	foreach ( $dynamic_css as $handle => $stylesheet ) {
+		$stylesheet_obj = new The7_Dynamic_Stylesheet( $handle, $stylesheet['src'] );
+
+		if ( ! empty( $stylesheet['path'] ) ) {
+			$stylesheet_obj->set_less_file( $stylesheet['path'] );
+		}
+
+		$imports = empty( $stylesheet['imports'] ) ? array() : $stylesheet['imports'];
+		$dynamic_css_cache[ $handle ] = $lessc->compile_file( $stylesheet_obj->get_less_file(), $imports );
+	}
+
+	return $dynamic_css_cache;
+}
+
+/**
+ * Store CSS code of each stylesheet to be enqueued inline.
+ *
+ * @param array $dynamic_css Array of compiled dynamic stylesheets.
+ */
 function presscore_set_dynamic_css_cache( $dynamic_css ) {
 	update_option( 'the7_dynamic_css_cache', $dynamic_css );
 }
 
+/**
+ * Return an array of compiled CSS code of each dynamic stylesheet.
+ *
+ * @return array
+ */
 function presscore_get_dynamic_css_cache() {
 	return (array) get_option( 'the7_dynamic_css_cache', array() );
 }
 
+/**
+ * Set dynamic css version.
+ *
+ * @param string $version Dynamic css version.
+ */
 function presscore_set_dynamic_css_version( $version ) {
 	update_option( 'the7_dynamic_css_version', $version );
 }
 
+/**
+ * Return dynamic css version.
+ *
+ * @return string|bool
+ */
 function presscore_get_dynamic_css_version() {
 	return get_option( 'the7_dynamic_css_version' );
 }
@@ -160,17 +322,29 @@ if ( ! function_exists( 'the7_maybe_regenerate_dynamic_css' ) ) :
 	 * @since 5.5.0
 	 */
 	function the7_maybe_regenerate_dynamic_css() {
-		if ( ! presscore_force_regenerate_css() ) {
+		$force_regenerate = presscore_force_regenerate_css();
+
+		// Regenerate dynamic stylesheets if their definitions are changed.
+		$dynamic_stylesheets      = presscore_get_dynamic_stylesheets_list();
+		$dynamic_stylesheets_hash = md5( wp_json_encode( $dynamic_stylesheets ) );
+		if ( $dynamic_stylesheets_hash !== get_option( 'the7_last_dynamic_stylesheets_hash' ) ) {
+			$force_regenerate = true;
+			update_option( 'the7_last_dynamic_stylesheets_hash', $dynamic_stylesheets_hash );
+		}
+
+		if ( ! $force_regenerate ) {
 			return;
 		}
 
 		presscore_set_force_regenerate_css( false );
-		$dynamic_stylesheets = presscore_get_dynamic_stylesheets_list();
+		$admin_dynamic_css = presscore_get_admin_dynamic_stylesheets_list();
+
 		try {
-			presscore_regenerate_dynamic_css( $dynamic_stylesheets );
+			presscore_regenerate_dynamic_css( array_merge( $dynamic_stylesheets, $admin_dynamic_css ) );
 		} catch ( Exception $e ) {
 			// Do nothing.
 		}
+		do_action( 'the7_maybe_regenerate_dynamic_css_done' );
 	}
 
 endif;
@@ -186,14 +360,15 @@ if ( ! function_exists( 'presscore_compile_loader_css' ) ) :
 	 * @return string
 	 */
 	function presscore_compile_loader_css() {
-		include_once PRESSCORE_EXTENSIONS_DIR . '/less-vars/less-functions.php';
 		include_once PRESSCORE_DIR . '/less-vars.php';
-		include_once PRESSCORE_CLASSES_DIR . '/less/The7_Less_Compiler.php';
-		include_once PRESSCORE_CLASSES_DIR . '/less/The7_Dynamic_Stylesheet.php';
 
-		$less_vars = presscore_compile_less_vars();
-		$lessc = new The7_Less_Compiler( $less_vars );
-		$css = $lessc->compile_file( The7_Dynamic_Stylesheet::get_theme_css_dir() . '/beautiful-loading.less' );
+		try {
+			$less_vars = presscore_compile_less_vars();
+			$lessc     = new The7_Less_Compiler( $less_vars );
+			$css       = $lessc->compile_file( The7_Dynamic_Stylesheet::get_theme_css_dir() . '/beautiful-loading.less' );
+		} catch ( Exception $e ) {
+			return '';
+		}
 
 		return $css;
 	}
@@ -203,10 +378,12 @@ endif;
 if ( ! function_exists( 'presscore_cache_loader_inline_css' ) ) :
 
 	/**
-	 * Cahce bautiful loader inline css.
+	 * Store beautiful loader css.
 	 *
 	 * @since 3.3.2
-	 * @param  string $css
+	 *
+	 * @param  string $css CSS code.
+	 *
 	 * @return string
 	 */
 	function presscore_cache_loader_inline_css( $css ) {
@@ -223,8 +400,9 @@ if ( ! function_exists( 'presscore_get_loader_inline_css' ) ) :
 	 * This function returns compiled loader css.
 	 *
 	 * First of all function attempts to read css from cache, if false then regenerate it manually.
-	 * 
+	 *
 	 * @since 3.3.2
+	 *
 	 * @return string
 	 */
 	function presscore_get_loader_inline_css() {
@@ -244,7 +422,7 @@ if ( ! function_exists( 'presscore_force_regenerate_css' ) ) :
 
 	/**
 	 * Get regenerate css from less flag.
-	 * 
+	 *
 	 * @return boolean
 	 */
 	function presscore_force_regenerate_css() {
@@ -257,8 +435,9 @@ if ( ! function_exists( 'presscore_set_force_regenerate_css' ) ) :
 
 	/**
 	 * Set force regenerate css from less flag.
-	 * 
-	 * @param  boolean $force
+	 *
+	 * @param  boolean $force Force regenerate dunamic css.
+	 *
 	 * @return boolean
 	 */
 	function presscore_set_force_regenerate_css( $force = false ) {

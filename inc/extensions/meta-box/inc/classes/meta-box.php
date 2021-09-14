@@ -375,12 +375,18 @@ if ( ! class_exists( 'The7_RW_Meta_Box' ) )
 
 			// Display label and input in DIV and allow user-defined classes to be appended
 			$classes = array( 'the7-mb-field', "the7-mb-{$field['type']}-wrapper" );
-			if ( 'hidden' === $field['type'] )
+			if ( 'hidden' === $field['type'] ) {
 				$classes[] = 'hidden';
-			if ( !empty( $field['required'] ) )
+			}
+			if ( ! empty( $field['required'] ) ) {
 				$classes[] = 'required';
-			if ( !empty( $field['class'] ) )
+			}
+			if ( ! empty( $field['class'] ) ) {
 				$classes[] = $field['class'];
+			}
+			if ( isset( $field['save_in_preset'] ) && $field['save_in_preset'] === false ) {
+				$classes[] = 'dont-save-in-preset';
+			}
 
 			return sprintf(
 				$before . '<div class="%s"%s>%s</div>' . $after,
@@ -503,9 +509,33 @@ if ( ! class_exists( 'The7_RW_Meta_Box' ) )
 			if ( defined( 'DOING_AUTOSAVE' ) && !$this->meta_box['autosave'] )
 				return;
 
-			// Make sure meta is added to the post, not a revision
-			if ( $the_post = wp_is_post_revision( $post_id ) )
-				$post_id = $the_post;
+			// Make sure meta is not added to a revision
+			if ( wp_is_post_revision( $post_id ) )
+				return;
+
+			if ( isset( $this->meta_box['only_on']['template'] ) ) {
+				$post_template = get_post_meta( $post_id, '_wp_page_template', true );
+				if ( ! in_array( $post_template, (array) $this->meta_box['only_on']['template'], true ) ) {
+					foreach ( $this->fields as $field ) {
+						delete_post_meta( $post_id, $field['id'] );
+					}
+
+					return;
+				}
+			}
+
+			if ( isset( $this->meta_box['only_on']['meta_value'] ) ) {
+				foreach ( (array) $this->meta_box['only_on']['meta_value'] as $meta_key => $meta_value ) {
+					$meta_value_to_check = isset( $_POST[ $meta_key ] ) ? $_POST[ $meta_key ] : get_post_meta( $post_id, $meta_key, true );
+					if ( $meta_value_to_check !== $meta_value ) {
+						foreach ( $this->fields as $field ) {
+							delete_post_meta( $post_id, $field['id'] );
+						}
+
+						return;
+					}
+				}
+			}
 
 			// Save post action removed to prevent infinite loops
 			remove_action( 'save_post', array( $this, 'save_post' ) );
@@ -667,7 +697,8 @@ if ( ! class_exists( 'The7_RW_Meta_Box' ) )
 		 */
 		static function apply_field_class_filters( $field, $method_name, $value )
 		{
-			$args   = array_slice( func_get_args(), 2 );
+			$args   = func_get_args();
+			$args   = array_slice( $args, 2 );
 			$args[] = $field;
 
 			// Call:     field class method
@@ -695,7 +726,8 @@ if ( ! class_exists( 'The7_RW_Meta_Box' ) )
 		 */
 		static function do_field_class_actions( $field, $method_name )
 		{
-			$args   = array_slice( func_get_args(), 2 );
+			$args   = func_get_args();
+			$args   = array_slice( $args, 2 );
 			$args[] = $field;
 
 			// Call:     field class method

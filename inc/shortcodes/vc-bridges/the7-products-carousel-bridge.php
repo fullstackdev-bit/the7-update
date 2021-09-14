@@ -1,9 +1,6 @@
 <?php
 
-// File Security Check.
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 return array(
 	"weight" => -1,
@@ -12,7 +9,6 @@ return array(
 	"icon" => "dt_vc_ico_products",
 	"class" => "dt_products_carousel",
 	"category" => __('by Dream-Theme', 'the7mk2'),
-	"admin_enqueue_css" => array(get_template_directory_uri().'/fonts/icomoon-arrows-the7/style.css'),
 	"params" => array(
 		// General group.
 		array(
@@ -77,6 +73,7 @@ return array(
 				'Author'=> 'author',
 				'Menu Order'=> 'menu_order',
 				'Title'=> 'title',
+				'Random' => 'rand',
 			),
 			'edit_field_class' => 'vc_col-xs-6 vc_column',
 		),
@@ -163,6 +160,13 @@ return array(
 			"edit_field_class" => "vc_col-xs-12 vc_column dt_row-6",
 		),
 		array(
+			'heading'          => __( 'Stage padding ', 'the7mk2' ),
+			'param_name'       => 'stage_padding',
+			'type'             => 'dt_number',
+			'value'            => '0',
+			'edit_field_class' => 'vc_col-xs-12 vc_column dt_row-6',
+		),
+		array(
 			"heading" => __("Enable adaptive height", "the7mk2"),
 			"param_name" => "adaptive_height",
 			'type' => 'dt_switch',
@@ -190,14 +194,14 @@ return array(
 			'edit_field_class' => 'vc_col-xs-12 vc_column dt_row-6',
 		),
 		array(
-			"heading" => __("Transition speed","the7mk2"),
-			"param_name" => "speed",
-			"type" => "dt_number",
-			"value" => "600",
-			"min" => "100",
-			"max" => "10000",
-			"step" => "100",
-			"suffix" => "ms",
+			'heading'     => __( 'Transition speed', 'the7mk2' ),
+			'description' => __( '(milliseconds)', 'the7mk2' ),
+			'param_name'  => 'speed',
+			'type'        => 'dt_number',
+			'value'       => '600',
+			'min'         => '100',
+			'max'         => '10000',
+			'step'        => '100',
 		),
 		array(
 			"heading" => __("Autoplay slides", "the7mk2"),
@@ -210,15 +214,15 @@ return array(
 			),
 		),
 		array(
-			"heading" => __("Autoplay speed","the7mk2"),
-			"param_name" => "autoplay_speed",
-			"type" => "dt_number",
-			"value" => "6000",
-			"min" => "100",
-			"max" => "10000",
-			"step" => "10",
-			"suffix" => "ms",
-			"dependency" => Array("element" => "autoplay", "value" => array("y"))
+			'heading'     => __( 'Autoplay speed', 'the7mk2' ),
+			'description' => __( '(milliseconds)', 'the7mk2' ),
+			'param_name'  => 'autoplay_speed',
+			'type'        => 'dt_number',
+			'value'       => '6000',
+			'min'         => '100',
+			'max'         => '10000',
+			'step'        => '10',
+			'dependency'  => array( 'element' => 'autoplay', 'value' => array( 'y' ) ),
 		),
 		array(
 			'heading' => __( 'Extra Class', 'the7mk2' ),
@@ -437,13 +441,28 @@ return array(
 		),
 		array(
 			'group' => __( 'Arrows', 'the7mk2' ),
+			'heading'    => __( 'Show arrow border color', 'the7mk2' ),
+			'param_name' => 'arrow_icon_border',
+			'type'       => 'dt_switch',
+			'value'      => 'y',
+			'options'    => array(
+				'Yes' => 'y',
+				'No'  => 'n',
+			),
+			'dependency'	=> array(
+				'element'	=> 'arrows',
+				'value'		=> 'y',
+			),
+		),
+		array(
+			'group' => __( 'Arrows', 'the7mk2' ),
 			'heading' => __('Arrow border color', 'the7mk2'),
 			'description' => __( "Leave empty to use accent color.", 'the7mk2' ),
 			'param_name' => 'arrow_border_color',
 			'type' => 'colorpicker',
 			'value' => '',
 			'dependency'	=> array(
-				'element'	=> 'arrows',
+				'element'	=> 'arrow_icon_border',
 				'value'		=> 'y',
 			),
 		),
@@ -499,13 +518,28 @@ return array(
 		),
 		array(
 			'group' => __( 'Arrows', 'the7mk2' ),
+			'heading'    => __( 'Show arrow border color hover', 'the7mk2' ),
+			'param_name' => 'arrow_icon_border_hover',
+			'type'       => 'dt_switch',
+			'value'      => 'y',
+			'options'    => array(
+				'Yes' => 'y',
+				'No'  => 'n',
+			),
+			'dependency'	=> array(
+				'element'	=> 'arrows',
+				'value'		=> 'y',
+			),
+		),
+		array(
+			'group' => __( 'Arrows', 'the7mk2' ),
 			'heading' => __('Arrow border color hover ', 'the7mk2'),
 			'description' => __( "Leave empty to use accent color.", 'the7mk2' ),
 			'param_name' => 'arrow_border_color_hover',
 			'type' => 'colorpicker',
 			'value' => '',
 			'dependency'	=> array(
-				'element'	=> 'arrows',
+				'element'	=> 'arrow_icon_border_hover',
 				'value'		=> 'y',
 			),
 		),

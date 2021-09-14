@@ -1,4 +1,48 @@
 <wpml-config>
+    <built-with-page-builder>/\[vc_row\]/</built-with-page-builder>
+    <elementor-widgets>
+        <widget name="the7_content_carousel">
+            <fields-in-item items_of="list">
+                <field type="List Title" editor_type="LINE">list_title</field>
+                <field type="List Content" editor_type="AREA">list_content</field>
+                <field type="List Icon" editor_type="VISUAL">list_icon</field>
+                <field type="Button" editor_type="VISUAL">button</field>
+                <field type="Link" editor_type="LINK">link</field>
+            </fields-in-item>
+        </widget>
+        <widget name="the7_testimonials_carousel">
+            <fields-in-item items_of="list">
+                <field type="List Title" editor_type="LINE">list_title</field>
+                <field type="List Sub Title" editor_type="LINE">list_subtitle</field>
+                <field type="List Content" editor_type="AREA">list_content</field>
+                <field type="Button" editor_type="VISUAL">button</field>
+                <field type="Link" editor_type="LINK">link</field>
+            </fields-in-item>
+        </widget>
+        <widget name="the7-accordion">
+            <fields-in-item items_of="tabs">
+                <field type="Accordion Title" editor_type="LINE">tab_title</field>
+                <field type="Accordion Content" editor_type="AREA">tab_content</field>
+            </fields-in-item>
+        </widget>
+        <widget name="the7_elements_carousel">
+            <fields>
+                <field type="Post carousel: Read more text" editor_type="LINE">read_more_button_text</field>
+            </fields>
+        </widget>
+        <widget name="the7_elements">
+            <fields>
+                <field type="Post grid: Read more text" editor_type="LINE">read_more_button_text</field>
+                <field type="Post grid: Load more text" editor_type="LINE">pagination_load_more_text</field>
+            </fields>
+        </widget>
+        <widget name="the7-elements-simple-posts">
+            <fields>
+                <field type="Simple Post: Read more text" editor_type="LINE">read_more_button_text</field>
+                <field type="Simple Post: Load more text" editor_type="LINE">pagination_load_more_text</field>
+            </fields>
+        </widget>
+    </elementor-widgets>
     <shortcodes>
         <shortcode>
             <tag>dt_fancy_title</tag>
@@ -91,6 +135,7 @@
         <taxonomy translate="1">dt_gallery_category</taxonomy>
     </taxonomies>
     <custom-fields>
+        <custom-field action="ignore">_wpb_shortcodes_custom_css</custom-field>
         <custom-field action="copy">_dt_albums_display</custom-field>
         <custom-field action="copy">_dt_albums_media_display</custom-field>
         <custom-field action="copy">_dt_albums_options_bg_under_masonry_posts</custom-field>
@@ -408,7 +453,28 @@
         <custom-field action="copy">_dt_testimonials_options_masonry_layout</custom-field>
         <custom-field action="copy">_dt_testimonials_options_target_width</custom-field>
         <custom-field action="copy">_dt_testimonial_options_link</custom-field>
+        <custom-field action="copy">_dt_fancy_header_responsiveness_heading</custom-field>
+        <custom-field action="copy">_dt_fancy_header_responsiveness</custom-field>
+        <custom-field action="copy">_dt_fancy_header_responsiveness_switch</custom-field>
+        <custom-field action="copy">_dt_fancy_header_responsive_height</custom-field>
+        <custom-field action="copy">_dt_fancy_header_responsive_font_size</custom-field>
+        <custom-field action="copy">_dt_fancy_header_responsive_title_line_height </custom-field>
+        <custom-field action="copy">_dt_fancy_header_responsive_subtitle_font_size</custom-field>
+        <custom-field action="copy">_dt_fancy_header_responsive_subtitle_line_height</custom-field>
+        <custom-field action="copy">_dt_fancy_header_responsive_breadcrumbs</custom-field>
+        <custom-field action="copy">_dt_fancy_header_title_line_height</custom-field>
+        <custom-field action="copy">_dt_fancy_header_title_font_size</custom-field>
+        <custom-field action="copy">_dt_fancy_header_subtitle_font_size</custom-field>
+        <custom-field action="copy">_dt_fancy_header_subtitle_line_height</custom-field>
+        <custom-field action="copy">_dt_fancy_header_subtitle_text_transform</custom-field>
+        <custom-field action="copy">_dt_fancy_header_text_transform</custom-field>
         <custom-field action="translate">_dt_testimonial_options_position</custom-field>
+        <custom-field action="copy">_dt_header_disabled_background</custom-field>
+        <custom-field action="copy">_dt_header_disabled_transparent_bg_color_scheme</custom-field>
+        <custom-field action="copy">_dt_header_disabled_transparent_top_bar_bg_color</custom-field>
+        <custom-field action="copy">_dt_header_disabled_transparent_top_bar_bg_opacity</custom-field>
+        <custom-field action="copy">_dt_header_disabled_transparent_bg_color</custom-field>
+        <custom-field action="copy">_dt_header_disabled_transparent_bg_opacity</custom-field>
     </custom-fields>
     <admin-texts>
         <key name="the7">
@@ -422,84 +488,96 @@
                     <key name="sidebar_desc"/>
                 </key>
             </key>
-            <key name="header-elements-text" />
-            <key name="header-elements-text-2" />
-            <key name="header-elements-text-3" />
+            <key name="header-elements-text"/>
+            <key name="header-elements-text-2"/>
+            <key name="header-elements-text-3"/>
             <key name="header-elements-text-4" />
             <key name="header-elements-text-5" />
-            <key name="header-elements-login-url" />
-            <key name="header-elements-logout-caption" />
-            <key name="header-elements-login-caption" />
-            <key name="header-elements-contact-clock-caption" />
-            <key name="header-elements-contact-skype-caption" />
-            <key name="header-elements-contact-email-caption" />
-            <key name="header-elements-contact-phone-caption" />
-            <key name="header-elements-contact-address-caption" />
-            <key name="header-elements-search-caption" />
-            <key name="header-elements-woocommerce_cart-caption" />
-            <key name="bottom_bar-copyrights" />
-            <key name="bottom_bar-text" />
+            <key name="header-elements-login-url"/>
+            <key name="header-elements-logout-caption"/>
+            <key name="header-elements-login-caption"/>
+            <key name="header-elements-contact-clock-caption"/>
+            <key name="header-elements-contact-skype-caption"/>
+            <key name="header-elements-contact-email-caption"/>
+            <key name="header-elements-contact-phone-caption"/>
+            <key name="header-elements-contact-address-caption"/>
+            <key name="header-elements-contact-multipurpose_1-caption" />
+            <key name="header-elements-contact-multipurpose_2-caption" />
+            <key name="header-elements-contact-multipurpose_3-caption" />
+            <key name="header-elements-contact-multipurpose_4-caption" />
+            <key name="header-elements-search-caption"/>
+            <key name="header-elements-search-input-caption" />
+            <key name="header-elements-woocommerce_cart-caption"/>
+            <key name="header-elements-button-1-name" />
+            <key name="header-elements-button-1-url" />
+            <key name="header-elements-button-2-name" />
+            <key name="header-elements-button-2-url" />
+            <key name="bottom_bar-copyrights"/>
+            <key name="bottom_bar-text"/>
             <key name="header-logo_regular">
-                <key name="0" />
-                <key name="1" />
+                <key name="0"/>
+                <key name="1"/>
             </key>
             <key name="header-logo_hd">
-                <key name="0" />
-                <key name="1" />
+                <key name="0"/>
+                <key name="1"/>
             </key>
             <key name="header-style-mobile-logo_regular">
-                <key name="0" />
-                <key name="1" />
+                <key name="0"/>
+                <key name="1"/>
             </key>
             <key name="header-style-mobile-logo_hd">
-                <key name="0" />
-                <key name="1" />
+                <key name="0"/>
+                <key name="1"/>
             </key>
             <key name="header-style-transparent-logo_regular">
-                <key name="0" />
-                <key name="1" />
+                <key name="0"/>
+                <key name="1"/>
             </key>
             <key name="header-style-transparent-logo_hd">
-                <key name="0" />
-                <key name="1" />
+                <key name="0"/>
+                <key name="1"/>
             </key>
             <key name="header-style-mixed-logo_regular">
-                <key name="0" />
-                <key name="1" />
+                <key name="0"/>
+                <key name="1"/>
             </key>
             <key name="header-style-mixed-logo_hd">
-                <key name="0" />
-                <key name="1" />
+                <key name="0"/>
+                <key name="1"/>
             </key>
             <key name="header-style-floating-logo_regular">
-                <key name="0" />
-                <key name="1" />
+                <key name="0"/>
+                <key name="1"/>
             </key>
             <key name="header-style-floating-logo_hd">
-                <key name="0" />
-                <key name="1" />
+                <key name="0"/>
+                <key name="1"/>
             </key>
             <key name="bottom_bar-logo_regular">
-                <key name="0" />
-                <key name="1" />
+                <key name="0"/>
+                <key name="1"/>
             </key>
             <key name="bottom_bar-logo_hd">
-                <key name="0" />
-                <key name="1" />
+                <key name="0"/>
+                <key name="1"/>
             </key>
-            <key name="general-post_back_button_target_page_id" />
-            <key name="general-project_back_button_target_page_id" />
-            <key name="general-album_back_button_target_page_id" />
-            <key name="general-rel_posts_head_title" />
-            <key name="general-rel_projects_head_title" />
-            <key name="social_buttons-post-button_title" />
-            <key name="social_buttons-portfolio_post-button_title" />
-            <key name="social_buttons-photo-button_title" />
-            <key name="social_buttons-page-button_title" />
-            <key name="social_buttons-product-button_title" />
-            <key name="custom_error_messages_validation" />
-            <key name="custom_error_messages" />
-            <key name="custom_success_messages" />
+            <key name="general-post_back_button_target_page_url" />
+            <key name="general-project_back_button_target_page_url" />
+            <key name="general-album_back_button_target_page_url" />
+            <key name="general-rel_posts_head_title"/>
+            <key name="general-rel_projects_head_title"/>
+            <key name="social_buttons-post-button_title"/>
+            <key name="social_buttons-portfolio_post-button_title"/>
+            <key name="social_buttons-photo-button_title"/>
+            <key name="social_buttons-page-button_title"/>
+            <key name="social_buttons-product-button_title"/>
+            <key name="custom_error_messages_validation"/>
+            <key name="custom_error_messages"/>
+            <key name="custom_success_messages"/>
+            <key name="header-mobile-menu_icon-caption-text" />
+            <key name="header-mobile-menu-close_icon-caption-text" />
+            <key name="portfolio-breadcrumbs-text" />
         </key>
     </admin-texts>
 </wpml-config>

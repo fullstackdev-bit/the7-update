@@ -23,6 +23,7 @@ if ( ! function_exists( 'dt_woocommerce_configure_mini_cart' ) ) :
 		$config->set( 'woocommerce.mini_cart.counter.style', of_get_option( 'header-elements-woocommerce_cart-counter-style', 'round' ) );
 		$config->set( 'woocommerce.mini_cart.counter.bg', of_get_option( 'header-elements-woocommerce_cart-counter-bg', 'accent' ) );
 		$config->set( 'woocommerce.mini_cart.dropdown', of_get_option( 'header-elements-woocommerce_cart-show_sub_cart' ) );
+		$config->set( 'woocommerce.mini_cart.dropdown.behavior', of_get_option( 'header-elements-woocommerce_cart-show_sub_cart_behavior', 'hover' ) );
 	}
 
 endif;
@@ -71,34 +72,20 @@ if ( ! function_exists( 'dt_woocommerce_configure_template' ) ) :
 
 		// Replace theme breadcrumbs.
 		add_filter( 'presscore_get_breadcrumbs-html', 'dt_woocommerce_replace_theme_breadcrumbs', 20, 2 );
-	}
 
-	add_action( 'get_header', 'dt_woocommerce_configure_template', 5 );
-
-endif;
-
-if ( ! function_exists( 'dt_woocommerce_configure_archive_templates' ) ) :
-
-	/**
-	 * This function configure sidebar and footer as for the 'shop' woocommerce page.
-	 *
-	 * @param string $name
-	 */
-	function dt_woocommerce_configure_archive_templates( $name = '' ) {
-		if ( 'shop' !== $name ) {
-			return;
-		}
-
-		if ( is_product_category() || is_product_tag() ) {
-			$post_id = wc_get_page_id( 'shop' );
-			if ( $post_id ) {
-				presscore_get_config()->set( 'post_id', $post_id );
-				presscore_config_populate_sidebar_and_footer_options();
-				presscore_get_config()->set( 'post_id', null );
-			}
+		// Fix fancy titles for archives.
+		if ( is_product_taxonomy() ) {
+			add_action( 'presscore_config_base_init', array( $mod_wc_config, 'fix_fancy_title_for_archives' ) );
 		}
 	}
 
-	add_action( 'get_header', 'dt_woocommerce_configure_archive_templates', 20 );
+
+	// On Editor - Register WooCommerce frontend hooks before the Editor init.
+	if ( ! empty( $_REQUEST['action'] ) && ('elementor' === $_REQUEST['action'] || 'elementor_ajax' === $_REQUEST['action']) && is_admin() ) {
+		add_action( 'init', 'dt_woocommerce_configure_template', 5 );
+	}
+	else{
+		add_action( 'get_header', 'dt_woocommerce_configure_template', 5 );
+	}
 
 endif;

@@ -49,6 +49,52 @@ class The7_Background_Updater extends WP_Background_Process {
 	}
 
 	/**
+	 * Handle
+	 *
+	 * Pass each queue item to the task handler, while remaining
+	 * within server memory and time limit constraints.
+	 */
+	protected function handle() {
+		$this->lock_process();
+
+		do {
+			$batch = $this->get_batch();
+
+			foreach ( $batch->data as $key => $value ) {
+				$task = $this->task( $value );
+
+				if ( false !== $task ) {
+					$batch->data[ $key ] = $task;
+					break;
+				} else {
+					unset( $batch->data[ $key ] );
+				}
+
+				if ( $this->time_exceeded() || $this->memory_exceeded() ) {
+					// Batch limits reached.
+					break;
+				}
+			}
+
+			// Update or delete current batch.
+			if ( ! empty( $batch->data ) ) {
+				$this->update( $batch->key, $batch->data );
+			} else {
+				$this->delete( $batch->key );
+			}
+		} while ( ! $this->time_exceeded() && ! $this->memory_exceeded() && ! $this->is_queue_empty() );
+
+		$this->unlock_process();
+
+		// Start next batch or complete process.
+		if ( ! $this->is_queue_empty() ) {
+			$this->dispatch();
+		} else {
+			$this->complete();
+		}
+	}
+
+	/**
 	 * Schedule fallback event.
 	 */
 	protected function schedule_event() {
@@ -63,6 +109,46 @@ class The7_Background_Updater extends WP_Background_Process {
 	 */
 	public function is_updating() {
 		return false === $this->is_queue_empty();
+	}
+
+	/**
+	 * Get batches.
+	 *
+	 * @return stdClass Return the first batch from the queue
+	 */
+	public function get_batches() {
+		global $wpdb;
+
+		$table        = $wpdb->options;
+		$column       = 'option_name';
+		$key_column   = 'option_id';
+		$value_column = 'option_value';
+
+		if ( is_multisite() ) {
+			$table        = $wpdb->sitemeta;
+			$column       = 'meta_key';
+			$key_column   = 'meta_id';
+			$value_column = 'meta_value';
+		}
+
+		$key = $this->identifier . '_batch_%';
+
+		$query = $wpdb->get_results( $wpdb->prepare( "
+		SELECT *
+		FROM {$table}
+		WHERE {$column} LIKE %s
+		ORDER BY {$key_column} ASC
+		", $key ) );
+
+		$batches = array();
+		foreach($query as $row) {
+			$batch       = new stdClass();
+			$batch->key  = $row->$column;
+			$batch->data = maybe_unserialize( $row->$value_column );
+			$batches[] = $batch;
+		}
+
+		return $batches;
 	}
 
 	/**
@@ -81,14 +167,20 @@ class The7_Background_Updater extends WP_Background_Process {
 			define( 'THE7_UPDATING', true );
 		}
 
-		include_once( dirname( __FILE__ ) . '/the7-update-functions.php' );
+		// Bump db version shortcut.
+		if ( is_string( $callback ) && strpos( $callback, 'bump_db_version_to_' ) === 0 ) {
+			$version = str_replace( 'bump_db_version_to_', '', $callback );
+			The7_Install::update_db_version( $version );
+
+			return false;
+		}
 
 		$task = false;
 		if ( is_callable( $callback ) ) {
-			$task = call_user_func( $callback );
+			$task = $callback();
 		}
 
-		return ( $task ? $task : false );
+		return ( $task ?: false );
 	}
 
 	/**

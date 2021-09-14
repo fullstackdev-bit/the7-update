@@ -48,10 +48,10 @@ if ( ! function_exists( 'dt_woocommerce_inject_theme_options' ) ) :
 
 	function dt_woocommerce_inject_theme_options( $options ) {
 		if ( array_key_exists( 'of-header-menu', $options ) ) {
-			$options['of-woocommerce-mod-injected-header-options'] = plugin_dir_path( __FILE__ ) . 'options-inject-in-header.php';
+			$options['of-woocommerce-mod-injected-header-options'] = plugin_dir_path( __FILE__ ) . 'wc-cart-micro-widget-options.php';
 		}
 		if ( array_key_exists( 'of-likebuttons-menu', $options ) ) {
-			$options[] = plugin_dir_path( __FILE__ ) . 'options-inject-in-likebuttons.php';
+			$options[] = plugin_dir_path( __FILE__ ) . 'wc-share-buttons-options.php';
 		}
 		return $options;
 	}
@@ -62,9 +62,18 @@ endif;
 if ( ! function_exists( 'dt_woocommerce_setup_less_vars' ) ) :
 
 	/**
-	 * @param Presscore_Lib_LessVars_Manager $less_vars
+	 * @param The7_Less_Vars_Manager_Interface $less_vars
 	 */
-	function dt_woocommerce_setup_less_vars( $less_vars ) {
+	function dt_woocommerce_setup_less_vars( The7_Less_Vars_Manager_Interface $less_vars ) {
+		the7_less_add_responsive_font($less_vars,"header-elements-woocommerce_cart-font-content", "product-microwidget-content");
+
+		$less_vars->add_pixel_number( 'product-title-gap', of_get_option( 'woocommerce_product_title_gap' ) );
+		$less_vars->add_pixel_number( 'product-price-gap', of_get_option( 'woocommerce_product_price_gap' ) );
+		$less_vars->add_pixel_number( 'product-rating-gap', of_get_option( 'woocommerce_product_rating_gap' ) );
+		$less_vars->add_pixel_number( 'product-description-gap', of_get_option( 'woocommerce_product_desc_gap' ) );
+		$less_vars->add_pixel_number( 'product-cart-gap', of_get_option( 'woocommerce_product_cart_gap' ) );
+		$less_vars->add_keyword( 'product-alignment', of_get_option( 'woocommerce_display_align' ) );
+
 		$less_vars->add_hex_color(
 			'product-counter-color',
 			of_get_option( 'header-elements-woocommerce_cart-counter-color' )
@@ -88,22 +97,42 @@ if ( ! function_exists( 'dt_woocommerce_setup_less_vars' ) ) :
 		}
 		unset( $gradient_obj, $first_color, $gradient, $counter_color_vars );
 
+		$less_vars->add_hex_color(
+			'sub-cart-color',
+			of_get_option( 'header-elements-woocommerce_cart-sub_cart-font-color' )
+		);
+
+ 		$less_vars->add_pixel_number(
+     		'sub-cart-width',
+     		of_get_option( 'header-elements-woocommerce_cart-sub_cart-bg-width' )
+     	);
+		$less_vars->add_rgba_color(
+			'sub-cart-bg',
+			of_get_option( 'header-elements-woocommerce_cart-sub_cart-bg-color' )
+		);
+
 		$less_vars->add_number(
 			'product-img-width',
 			of_get_option( 'woocommerce_product_img_width' )
  		);
- 		$less_vars->add_pixel_number(
-     		'switch-product-to-mobile',
-     		of_get_option( 'woocommerce_product_switch' )
-     	);
 		$less_vars->add_number(
 			'cart-total-width',
 			of_get_option( 'woocommerce_cart_total_width' )
  		);
+		$less_vars->storage()->start_excluding_css_vars();
  		$less_vars->add_pixel_number(
      		'switch-cart-list-to-mobile',
      		of_get_option( 'woocommerce_cart_switch' )
      	);
+ 		$less_vars->add_pixel_number(
+		    'switch-product-to-mobile',
+		    of_get_option( 'woocommerce_product_switch' )
+	    );
+		$less_vars->add_pixel_number(
+			'wc-list-switch-to-mobile',
+			of_get_option( 'woocommerce_list_switch' )
+		);
+		$less_vars->storage()->end_excluding_css_vars();
 		$less_vars->add_rgba_color(
 			'wc-steps-bg',
 			of_get_option( 'woocommerce_steps_bg_color' ),
@@ -121,10 +150,7 @@ if ( ! function_exists( 'dt_woocommerce_setup_less_vars' ) ) :
 			'wc-list-img-width',
 			of_get_option( 'woocommerce_shop_template_img_width' )
  		);
-     	$less_vars->add_pixel_number(
-			'wc-list-switch-to-mobile',
-			of_get_option( 'woocommerce_list_switch' )
- 		);
+
 	}
 	add_action( 'presscore_setup_less_vars', 'dt_woocommerce_setup_less_vars', 20 );
 
@@ -163,6 +189,22 @@ if ( ! function_exists( 'dt_woocommerce_add_cart_micro_widget_filter' ) ) {
 
 	add_filter( 'header_layout_elements', 'dt_woocommerce_add_cart_micro_widget_filter' );
 }
+
+/**
+ * Shortcodes inline css generated on post save, no need to duplicate it.
+ *
+ * @see the7_save_shortcode_inline_css
+ *
+ * @param array $exclude_meta
+ *
+ * @return array
+ */
+function the7_prevent_the7_shortcodes_dynamic_css_meta_duplication_with_product_duplication( $exclude_meta ) {
+	$exclude_meta[] = 'the7_shortcodes_dynamic_css';
+
+	return $exclude_meta;
+}
+add_filter( 'woocommerce_duplicate_product_exclude_meta', 'the7_prevent_the7_shortcodes_dynamic_css_meta_duplication_with_product_duplication' );
 
 /**
  * Add sidebar columns to products on manage_edit page.

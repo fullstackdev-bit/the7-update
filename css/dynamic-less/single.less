@@ -21,13 +21,29 @@
 	.comment-author a,
 	.comment-author .fn {
 		color: @h5-color;
-		font: @h5-font-style @h5-font-variant @h5-font-weight @h5-font-size~"/"@h5-line-height @h5-font-family;
+		font: @h5-font-style @h5-font-variant @h5-font-weight @h5-font-size-desktop~"/"@h5-line-height-desktop @h5-font-family;
 		text-transform: @h5-text-transform;
+		@media (max-width: @lg-breakpoint - 1) {
+			font-size: @h5-font-size-tablet;
+			line-height: @h5-line-height-tablet;
+		}
+		@media (max-width: @md-breakpoint - 1) {
+			font-size: @h5-font-size-mobile;
+			line-height: @h5-line-height-mobile;
+		}
 	}
 	.comments-title {
 		color: @h3-color;
-		font: @h3-font-style @h3-font-variant @h3-font-weight @h3-font-size~"/"@h3-line-height @h3-font-family;
+		font: @h3-font-style @h3-font-variant @h3-font-weight @h3-font-size-desktop~"/"@h3-line-height-desktop @h3-font-family;
 		text-transform: @h3-text-transform;
+		@media (max-width: @lg-breakpoint - 1) {
+			font-size: @h3-font-size-tablet;
+			line-height: @h3-line-height-tablet;
+		}
+		@media (max-width: @md-breakpoint - 1) {
+			font-size: @h3-font-size-mobile;
+			line-height: @h3-line-height-mobile;
+		}
 	}
 	#reply-title small {
 		font: @base-font-style @base-font-variant @base-font-weight @base-font-size~"/"@base-line-height @base-font-family;
@@ -163,10 +179,12 @@
 }
 .post-navigation .nav-links {
 	.transparent-border-mixin;
-	& i[class^="fa"] {
+	& i[class^="icomoon-the7"],
+	& [class^="dt-icon-"] {
 		color: fade(@h1-color, 12%);
 	}
-	& a i[class^="fa"]:hover {
+	& a i[class^="icomoon-the7"]:hover,
+	& a [class^="dt-icon-"]:hover {
 		color: fade(@h1-color, 23%);
 	}
 	& a .post-title:hover {

@@ -2,41 +2,46 @@
 /**
  * Template part with actual header.
  *
- * @package The7
  * @since 1.0.0
+ *
+ * @package The7\Templates
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
-}
+defined( 'ABSPATH' ) || exit;
+
 ?><!DOCTYPE html>
 <!--[if !(IE 6) | !(IE 7) | !(IE 8)  ]><!-->
 <html <?php language_attributes(); ?> class="no-js">
 <!--<![endif]-->
 <head>
-	<meta charset="<?php bloginfo( 'charset' ) ?>" />
+	<meta charset="<?php bloginfo( 'charset' ); ?>" />
 	<?php if ( presscore_responsive() ) : ?>
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 	<?php endif ?>
-    <?php presscore_theme_color_meta() ?>
-	<link rel="profile" href="http://gmpg.org/xfn/11" />
-    <?php
-    presscore_js_resize_event_hack();
-    wp_head();
-    ?>
-	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+	<?php presscore_theme_color_meta(); ?>
+	<link rel="profile" href="https://gmpg.org/xfn/11" />
+	<?php
+	presscore_js_resize_event_hack();
+	wp_head();
+	?>
 </head>
-<body <?php body_class() ?>>
+<body id="the7-body" <?php body_class(); ?>>
 <?php
+wp_body_open();
 do_action( 'presscore_body_top' );
 
 $config = presscore_config();
+
+$page_class = '';
+if ( 'boxed' === $config->get( 'template.layout' ) ) {
+	$page_class = 'class="boxed"';
+}
 ?>
 
-<div id="page"<?php if ( 'boxed' == $config->get( 'template.layout' ) ) echo ' class="boxed"'; ?>>
-	<a class="skip-link screen-reader-text" href="#content"><?php _e( 'Skip to content', 'the7mk2' ) ?></a>
+<div id="page" <?php echo $page_class; ?>>
+	<a class="skip-link screen-reader-text" href="#content"><?php _e( 'Skip to content', 'the7mk2' ); ?></a>
 <?php
-if ( apply_filters( 'presscore_show_header', true ) ) {
+if ( apply_filters( 'presscore_show_header', $config->get( 'header.show' ) ) ) {
 	presscore_get_template_part( 'theme', 'header/header', str_replace( '_', '-', $config->get( 'header.layout' ) ) );
 	presscore_get_template_part( 'theme', 'header/mobile-header' );
 }

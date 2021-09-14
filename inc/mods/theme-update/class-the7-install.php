@@ -1,9 +1,6 @@
 <?php
 
-// File Security Check.
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class The7_Install
@@ -15,72 +12,198 @@ class The7_Install {
 	 */
     private static $background_updater;
 
-	/**
-	 * @var array
-	 */
-	private static $update_callbacks = array(
-		'5.5.0' => array(
-			'the7_update_550_fancy_titles_parallax',
-			'the7_update_550_fancy_titles_font_size',
-			'the7_update_550_fancy_subtitles_font_size',
-			'the7_update_550_db_version',
-		),
-		'6.0.0' => array(
-			'the7_mass_regenerate_short_codes_inline_css',
-			'the7_update_600_db_version',
-		),
-		'6.1.0' => array(
-			'the7_update_610_db_version',
-		),
-		'6.1.1' => array(
-			'the7_update_611_page_transparent_top_bar_migration',
-			'the7_update_611_db_version',
-		),
-		'6.2.0' => array(
-			'the7_mass_regenerate_short_codes_inline_css',
-			'the7_update_620_db_version',
-		),
-		'6.3.0' => array(
-			'the7_update_630_microsite_content_visibility_settings_migration',
-			'the7_update_630_db_version',
-		),
-		'6.4.0' => array(
-			'the7_mass_regenerate_short_codes_inline_css',
-			'the7_update_640_db_version',
-		),
-		'6.4.1' => array(
-			'the7_update_641_carousel_backward_compatibility',
-			'the7_update_641_db_version',
-		),
-		'6.4.3' => array(
-			'the7_mass_regenerate_short_codes_inline_css',
-			'the7_update_643_db_version',
-		),
-		'6.5.0' => array(
-			'the7_update_650_disable_options_autoload',
-			'the7_update_650_db_version',
-		),
-		'6.6.0' => array(
-			'the7_mass_regenerate_short_codes_inline_css',
-			'the7_update_660_db_version',
-		),
-		'6.6.1' =>array(
-			'the7_mass_regenerate_short_codes_inline_css',
-			'the7_update_661_db_version',
-		),
-		'6.7.0' =>array(
-			'the7_mass_regenerate_short_codes_inline_css',
-			'the7_update_670_db_version',
-		),
-		'6.8.0' =>array(
-			'the7_mass_regenerate_short_codes_inline_css',
-			'the7_update_680_db_version',
-		),
-		'6.8.1' =>array(
-			'the7_mass_regenerate_short_codes_inline_css',
-			'the7_update_681_db_version',
-		),
-	);
+	private static function get_update_callbacks() {
+		return [
+			'5.5.0'   => [
+				'the7_update_550_fancy_titles_parallax',
+				'the7_update_550_fancy_titles_font_size',
+				'the7_update_550_fancy_subtitles_font_size',
+			],
+			'6.0.0'   => [
+				'the7_mass_regenerate_short_codes_inline_css',
+			],
+			'6.1.0'   => [],
+			'6.1.1'   => [
+				'the7_update_611_page_transparent_top_bar_migration',
+			],
+			'6.2.0'   => [
+				'the7_mass_regenerate_short_codes_inline_css',
+			],
+			'6.3.0'   => [
+				'the7_update_630_microsite_content_visibility_settings_migration',
+			],
+			'6.4.0'   => [
+				'the7_mass_regenerate_short_codes_inline_css',
+			],
+			'6.4.1'   => [
+				'the7_update_641_carousel_backward_compatibility',
+			],
+			'6.4.3'   => [
+				'the7_mass_regenerate_short_codes_inline_css',
+			],
+			'6.5.0'   => [
+				'the7_update_650_disable_options_autoload',
+			],
+			'6.6.0'   => [
+				'the7_mass_regenerate_short_codes_inline_css',
+			],
+			'6.6.1'   => [
+				'the7_mass_regenerate_short_codes_inline_css',
+			],
+			'6.7.0'   => [
+				'the7_mass_regenerate_short_codes_inline_css',
+			],
+			'6.8.0'   => [
+				'the7_mass_regenerate_short_codes_inline_css',
+			],
+			'6.8.1'   => [
+				'the7_mass_regenerate_short_codes_inline_css',
+			],
+			'6.9.3'   => [
+				'the7_update_693_migrate_custom_menu_widgets',
+				'the7_mass_regenerate_short_codes_inline_css',
+			],
+			'7.0.0'   => [
+				'the7_update_700_shortcodes_gradient_backward_compatibility',
+				'the7_mass_regenerate_short_codes_inline_css',
+			],
+			'7.1.0'   => [
+				'the7_mass_regenerate_short_codes_inline_css',
+			],
+			'7.3.0'   => [
+				'the7_update_730_set_fancy_title_zero_top_padding',
+				'the7_update_730_fancy_title_responsiveness_settings',
+			],
+			'7.4.0'   => [
+				'the7_update_740_fancy_title_uppercase_migration',
+			],
+			'7.4.3'   => [
+				'the7_update_743_back_button_migration',
+			],
+			'7.5.0'   => [
+				'the7_mass_regenerate_short_codes_inline_css',
+			],
+			'7.6.0'   => [
+				'the7_update_760_mega_menu_migration',
+			],
+			'7.6.2'   => [],
+			'7.7.0'   => [
+				'the7_update_770_shortcodes_blog_backward_compatibility',
+				'the7_mass_regenerate_short_codes_inline_css',
+			],
+			'7.7.1'   => [
+				'the7_update_771_shortcodes_blog_backward_compatibility',
+				'the7_update_771_shortcodes_button_backward_compatibility',
+				'the7_mass_regenerate_short_codes_inline_css',
+			],
+			'7.7.2'   => [],
+			'7.7.5'   => [
+				'the7_update_775_fontawesome_compatibility',
+			],
+			'7.7.6'   => [],
+			'7.8.0'   => [
+				'the7_update_780_shortcodes_backward_compatibility',
+			],
+			'7.9.0'   => [
+				'the7_update_790_silence_plugins_purchase_notification',
+			],
+			'7.9.1'   => [
+				'the7_regenerate_post_css',
+			],
+			'8.0.0'   => [],
+			'8.1.0'   => [],
+			'8.2.0'   => [],
+			'8.3.0'   => [
+				'the7_update_830_fix_post_padding_meta',
+				'the7_update_830_migrate_post_mobile_padding',
+				'the7_regenerate_post_css',
+			],
+			'8.4.0'   => [
+				'the7_regenerate_post_css',
+			],
+			'8.5.0'   => [
+				'the7_update_850_migrate_post_footer_visibility',
+			],
+			'8.5.0.2' => [
+				'the7_update_8502_migrate_post_footer_source_for_elementor',
+			],
+			'8.6.0'   => [],
+			'8.7.0'   => [
+				'the7_update_purge_elementor_cache',
+			],
+			'8.9.0'   => [
+				'the7_update_890_elementor_the7_elements',
+			],
+			'9.1.2'   => [
+				'the7_update_912_elementor_the7_elements',
+			],
+			'9.2.0'   => [],
+			'9.3.1'   => [
+				'the7_update_931_elementor_the7_photo_scroller',
+			],
+			'9.4.0'   => [
+				'the7_update_940_theme_options',
+				'the7_update_940_elementor_the7_posts_masonry',
+			],
+			'9.4.0.2' => [
+				'the7_update_9402_theme_options',
+			],
+			'9.6.0'   => [
+				'the7_update_9600_theme_options',
+				'the7_update_960_elementor_the7_posts_carousel',
+			],
+			'9.13.0'  => [
+				'the7_update_9130_elementor_the7_posts_carousel',
+				'the7_update_9130_elementor_the7_testimonials_carousel',
+				'the7_update_9130_elementor_the7_text_and_icon_carousel',
+			],
+			'9.14.0'  => [
+				'the7_update_9140_simple_posts_widget',
+				'the7_update_9140_simple_posts_carousel_widget',
+				'the7_update_9140_simple_products_widget',
+				'the7_update_9140_simple_products_carousel_widget',
+				'the7_update_9140_simple_product_category_widget',
+				'the7_update_9140_simple_product_category_carousel_widget',
+				'the7_elementor_flush_css_cache',
+			],
+			'9.14.2'  => [
+				'the7_update_9142_theme_options',
+			],
+			'9.15.1'  => [
+				'the7_update_9150_posts_carousel_widget',
+				'the7_update_9150_multipurpose_carousel_widget',
+				'the7_update_9150_testimonials_carousel_widget',
+				'the7_update_91501_simple_posts_widget_border',
+				'the7_update_91501_simple_posts_carousel_widget_border',
+				'the7_update_91501_simple_products_categories_widget_border',
+				'the7_update_91501_simple_products_categories_carousel_widget_border',
+				'the7_update_91501_simple_products_widget_border',
+				'the7_update_91501_simple_products_carousel_widget_border',
+				'the7_elementor_flush_css_cache',
+			],
+			'9.16.0'  => [
+				'the7_update_9160_set_buttons_integration_off',
+				'the7_update_9160_posts_masonry_widget_buttons',
+				'the7_update_9160_posts_carousel_widget_buttons',
+				'the7_update_9160_icon_box_grid_widget_buttons',
+				'the7_update_9160_simple_posts_carousel_widget_buttons',
+				'the7_update_9160_simple_posts_widget_buttons',
+				'the7_update_9160_simple_product_categories_widget_buttons',
+				'the7_update_9160_simple_product_categories_carousel_widget_buttons',
+				'the7_update_9160_simple_products_widget_buttons',
+				'the7_update_9160_simple_products_carousel_widget_buttons',
+				'the7_update_9160_products_widget_buttons',
+				'the7_update_9160_testimonials_widget_buttons',
+				'the7_update_9160_text_and_icon_carousel_widget_buttons',
+				'the7_elementor_flush_css_cache',
+			],
+			'9.17.0'  => [
+				'the7_update_9170_the7_nav_menu_widget',
+				'the7_elementor_flush_css_cache',
+				'the7_mass_regenerate_short_codes_inline_css',
+			],
+		];
+	}
 
     public static function init() {
 	    add_action( 'init', array( __CLASS__, 'init_background_updater' ), 5 );
@@ -92,6 +215,14 @@ class The7_Install {
 		    add_action( 'init', array( __CLASS__, 'show_db_update_notices' ), 20 );
 	    }
     }
+
+    public static function get_updater() {
+    	if (! self::$background_updater) {
+    		self::init_background_updater();
+		}
+
+    	return self::$background_updater;
+	}
 
     public static function check_version() {
 	    $current_db_version = self::get_db_version();
@@ -109,7 +240,12 @@ class The7_Install {
 	 * Init background updates
 	 */
 	public static function init_background_updater() {
-		include_once( dirname( __FILE__ ) . '/class-the7-background-updater.php' );
+		require_once __DIR__ . '/patches/interface-the7-db-patch.php';
+		require_once __DIR__ . '/class-the7-background-updater.php';
+		require_once __DIR__ . '/the7-update-functions.php';
+		require_once PRESSCORE_MODS_DIR . '/compatibility/elementor/upgrade/class-the7-elementor-updater.php';
+		require_once PRESSCORE_MODS_DIR . '/compatibility/elementor/upgrade/class-the7-elementor-widget-migrations.php';
+
 		self::$background_updater = new The7_Background_Updater();
 	}
 
@@ -147,19 +283,15 @@ class The7_Install {
 	}
 
 	public static function update_notice() {
-		include( dirname( __FILE__ ) . '/views/html-notice-update.php' );
+		include( __DIR__ . '/views/html-notice-update.php' );
 	}
 
 	public static function updating_notice() {
-		include( dirname( __FILE__ ) . '/views/html-notice-updating.php' );
+		include( __DIR__ . '/views/html-notice-updating.php' );
 	}
 
 	public static function updated_notice() {
-		include( dirname( __FILE__ ) . '/views/html-notice-updated.php' );
-	}
-
-	private static function get_update_callbacks() {
-		return self::$update_callbacks;
+		include( __DIR__ . '/views/html-notice-updated.php' );
 	}
 
 	/**
@@ -182,6 +314,10 @@ class The7_Install {
 		// Update db.
 		foreach ( $db_update_callbacks as $version => $update_callbacks ) {
 			if ( version_compare( $db_version, $version, '<' ) ) {
+
+				// Automatically bump db version as a last batch task.
+				$update_callbacks[] = 'bump_db_version_to_' . $version;
+
 				foreach ( $update_callbacks as $update_callback ) {
 					self::$background_updater->push_to_queue( $update_callback );
 					$update_queued = true;
@@ -238,6 +374,7 @@ class The7_Install {
 
 	public static function regenerate_stylesheets() {
 		presscore_refresh_dynamic_css();
+		the7_elementor_flush_css_cache();
 	}
 
 	public static function db_is_updating() {
@@ -255,8 +392,7 @@ class The7_Install {
 			return;
 		}
 
-		$patches_dir = trailingslashit( trailingslashit( dirname( __FILE__ ) ) . 'patches' );
-		require_once( $patches_dir . 'interface-the7-db-patch.php' );
+		$patches_dir = trailingslashit( trailingslashit( __DIR__ ) . 'patches' );
 
 		$patches = array(
 			'3.5.0' => 'The7_DB_Patch_030500',
@@ -272,6 +408,22 @@ class The7_Install {
 			'6.1.1' => 'The7_DB_Patch_060101',
 			'6.6.0' => 'The7_DB_Patch_060600',
 			'6.6.1' => 'The7_DB_Patch_060601',
+			'7.0.0' => 'The7_DB_Patch_070000',
+			'7.1.0' => 'The7_DB_Patch_070100',
+			'7.3.0' => 'The7_DB_Patch_070300',
+			'7.4.0' => 'The7_DB_Patch_070400',
+			'7.4.3' => 'The7_DB_Patch_070403',
+			'7.6.0' => 'The7_DB_Patch_070600',
+			'7.6.2' => 'The7_DB_Patch_070602',
+			'7.7.1' => 'The7_DB_Patch_070701',
+			'7.7.2' => 'The7_DB_Patch_070702',
+			'7.7.6' => 'The7_DB_Patch_070706',
+			'7.8.0' => 'The7_DB_Patch_070800',
+			'8.0.0' => 'The7_DB_Patch_080000',
+			'8.1.0' => 'The7_DB_Patch_080100',
+			'8.2.0' => 'The7_DB_Patch_080200',
+			'8.6.0' => 'The7_DB_Patch_080600',
+			'9.2.0' => 'The7_DB_Patch_090200',
 		);
 
 		$update_options = false;
@@ -284,13 +436,15 @@ class The7_Install {
 				require_once $patches_dir . 'class-' . strtolower( str_replace( '_', '-', $class_name ) ) . '.php';
 			}
 
-			$patch = new $class_name();
-			$options = $patch->apply( $options );
+			$patch          = new $class_name();
+			$options        = $patch->apply( $options );
 			$update_options = true;
 		}
 
+		The7_Options_Backup::store_options();
+
 		if ( $update_options ) {
-			update_option( optionsframework_get_options_id(), $options );
+			of_save_unsanitized_options( $options );
 			_optionsframework_delete_defaults_cache();
 		}
 	}

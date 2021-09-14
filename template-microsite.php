@@ -1,49 +1,21 @@
 <?php
 /**
- * Microsite template.
+ * Template Name: Microsite
  *
- * @package The7
- * @since 3.0.0
+ * Template Post Type: post, page, dt_portfolio
+ *
+ * @since   3.0.0
+ *
+ * @package The7\Templates
  */
 
-/*
-Template Name: Microsite
-Template Post Type: post, page, dt_portfolio
-*/
-
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 presscore_config()->set( 'template', 'microsite' );
-get_header(); ?>
+get_header();
 
-		<?php if ( presscore_is_content_visible() ): ?>	
+if ( presscore_is_content_visible() ) {
+	presscore_get_template_part( 'theme', 'microsite/microsite', get_post_type() );
+}
 
-			<div id="content" class="content" role="main">
-
-			<?php if ( have_posts() ) : while ( have_posts() ) : the_post(); ?>
-
-					<?php do_action('presscore_before_loop'); ?>
-
-					<?php the_content(); ?>
-
-					<?php presscore_display_share_buttons_for_post( 'page' ); ?>
-
-					<?php comments_template( '', true ); ?>
-
-				<?php endwhile; ?>
-
-			<?php else : ?>
-
-				<?php get_template_part( 'no-results', 'microsite' ); ?>
-
-			<?php endif; ?>
-
-			</div><!-- #content -->
-
-			<?php do_action('presscore_after_content'); ?>
-
-		<?php endif; // if content visible ?>
-
-<?php get_footer(); ?>
+get_footer();

@@ -8,8 +8,12 @@ Theme URI: http://the7.dream-demo.com/
 -----------------------------------------------------------------------------*/
 
 // Core variables and mixins
+@import "mixins.less";
+
+// DYNAMIC_IMPORT_TOP
+
+@import "dynamic-less/css-vars";
 @import "dynamic-less/variables.less";
-@import "dynamic-less/svg-icons.less";
 
 // Theme CSS
 @import "dynamic-less/typography.less";
@@ -31,3 +35,5 @@ Theme URI: http://the7.dream-demo.com/
 
 // Theme Presets
 @import "dynamic-less/presets.less";
+
+// DYNAMIC_IMPORT_BOTTOM

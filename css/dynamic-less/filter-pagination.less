@@ -42,11 +42,9 @@
 			&.act {
 				color: @accent-bg-color;
 			}
-			.accent-gradient & {
-				&:hover,
-				&.act {
-					.text-gradient (@startColor: @accent-bg-color, @endColor: @accent-text-color-2);
-				}
+			&:hover,
+			&.act {
+				.text-gradient (@startColor: @accent-bg-color, @endColor: @accent-text-color-2);
 			}
 		}
 		.filter-bg-decoration & {
@@ -56,10 +54,8 @@
 			&:after {
 				display: none;
 			}
-			.accent-gradient & {
-				&:not(.act):hover {
-					.text-gradient (@startColor: @accent-bg-color, @endColor: @accent-text-color-2);
-				}
+			&:not(.act):hover {
+				.text-gradient (@startColor: @accent-bg-color, @endColor: @accent-text-color-2);
 			}
 			&.act {
 				color: #fff;
@@ -79,20 +75,16 @@
 	}
 /*Sorting*/
 .filter-switch {
-	#page & {
-		background-color: fade(@accent-bg-color, 20%);
-	}
-	.accent-gradient #page & {
-		.background-gradient(  @startColor: fade(@accent-bg-color,20% ), @endColor: @accent-bg-filter-switch );
-	}
+	background-color: fade(@accent-bg-color, 20%);
+	.background-gradient(  @startColor: fade(@accent-bg-color,20% ), @endColor: @accent-bg-filter-switch );
+	
 }
 
 .filter:not(.filter-bg-decoration) .filter-categories a.act:after,
 .filter-switch-toggle {
 	background-color: @accent-bg-color;
-	.accent-gradient & {
-		.background-gradient (@startColor: @accent-bg-color, @endColor: @accent-bg-color-2);
-	}
+	.background-gradient (@startColor: @accent-bg-color, @endColor: @accent-bg-color-2);
+	
 }
 /* #PAGINATOR
 ================================================== */

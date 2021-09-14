@@ -60,7 +60,7 @@ if ( ! function_exists( 'presscore_get_post_fancy_date' ) ) :
 		}
 
 		return sprintf(
-			'<div class="%s"><a title="%s" href="%s" rel="nofollow"><span class="entry-month">%s</span><span class="entry-date updated">%s</span><span class="entry-year">%s</span></a></div>',
+			'<div class="%s"><a title="%s" href="%s"><span class="entry-month">%s</span><span class="entry-date updated">%s</span><span class="entry-year">%s</span></a></div>',
 				esc_attr( $class ), // class
 				esc_attr( get_the_time() ),	// title
 				$href,	// href
@@ -95,24 +95,6 @@ if ( ! function_exists( 'presscore_is_post_title_enabled' ) ) :
 	 */
 	function presscore_is_post_title_enabled() {
 		return in_array( presscore_get_config()->get( 'header_title' ), array( 'enabled', '' ) );
-	}
-
-endif;
-
-if ( ! function_exists( 'presscore_show_post_media' ) ) :
-
-	// TODO: Remove this.
-	function presscore_show_post_media() {
-		global $post;
-		if ( 'gallery' == get_post_format() ) {
-			$show_post_media = has_shortcode( $post->post_content, 'gallery' );
-
-		} else {
-			$show_post_media = !post_password_required() && has_post_thumbnail();
-
-		}
-
-		return $show_post_media;
 	}
 
 endif;
@@ -157,77 +139,51 @@ if ( ! function_exists( 'presscore_get_categorizer_sorting_fields' ) ) :
 	 *
 	 * @since 1.0.0
 	 */
-	function presscore_get_categorizer_sorting_fields() {
-
-		$config = presscore_get_config();
-
-		$show_orderby = $config->get( 'template.posts_filter.orderby.enabled' );
-		$show_order = $config->get( 'template.posts_filter.order.enabled' );
-
-		// if filter or all sorting buttons disabled - return empty string
-		if ( !$show_orderby && !$show_order ) {
-			return '';
-		}
-
-		$request_display = $config->get('request_display');
-
-		if ( null !== $request_display ) {
-			$display = $request_display;
-
-		} else {
-			$display = $config->get('display');
-			$display['select'] = 'all';
-
-		}
-
-		$select = isset($display['select']) ? $display['select'] : 'all';
-		$term_id = isset($display['terms_ids']) ? current( (array) $display['terms_ids'] ) : array();
+	function presscore_get_categorizer_sorting_fields( $select, $term_id, $order, $orderby, $show_order, $show_orderby ) {
 		$term = '';
-
-		if ( 'except' == $select && 0 === $term_id ) {
+		if ( 'except' === $select && 0 === $term_id ) {
 			$term = 'none';
-
-		} else if ( 'only' == $select ) {
-			$term = absint( $term_id );
-
+		} else if ( 'only' === $select ) {
+			$term = $term_id;
 		}
 
-		$paged = dt_get_paged_var();
+		$paged = the7_get_paged_var();
 
 		if ( $paged > 1 ) {
-			$base_link = get_pagenum_link($paged, false);
+			$link = get_pagenum_link($paged, false);
 		} else {
-			$base_link = get_permalink();
+			$link = get_permalink();
 		}
 
 		//////////////
 		// output //
 		//////////////
 
-		$link = add_query_arg( 'term', $term, $base_link );
+		if ( $term ) {
+			$link = add_query_arg( 'term', $term, $link );
+		}
+
 		$act = ' act';
 		$display_none = ' style="display: none;"';
-		$orderby = strtolower( $config->get('orderby') );
-		$order = strtolower( $config->get('order') );
 
 		$html =	'<div class="filter-extras">'
 			.'<div class="filter-by"' . ( $show_orderby ? '' : $display_none ) . '>'
-				. '<a href="' . esc_url( add_query_arg( array( 'orderby' => 'date', 'order' => $order ), $link ) ) . '" class="sort-by-date' . ('date' == $orderby ? $act : '') . '" data-by="date"><i class="far fa-calendar-alt"></i><span class="filter-popup">' . __( 'Sort by date', 'the7mk2' ) . '</span></a>'
+				. '<a href="' . esc_url( add_query_arg( array( 'orderby' => 'date', 'order' => $order ), $link ) ) . '" class="sort-by-date' . ('date' === $orderby ? $act : '') . '" data-by="date"><i class="dt-icon-the7-sort-02"></i><span class="filter-popup">' . __( 'Sort by date', 'the7mk2' ) . '</span></a>'
 				. '<span class="filter-switch"></span>'
-				. '<a href="' . esc_url( add_query_arg( array( 'orderby' => 'name', 'order' => $order ), $link ) ) . '" class="sort-by-name' . ('name' == $orderby ? $act : '') . '" data-by="name"><i class="fa fa-font" aria-hidden="true"></i><span class="filter-popup">' . __( 'Sort by name', 'the7mk2' ) . '</span></a>'
+				. '<a href="' . esc_url( add_query_arg( array( 'orderby' => 'name', 'order' => $order ), $link ) ) . '" class="sort-by-name' . ('name' === $orderby ? $act : '') . '" data-by="name"><i class="dt-icon-the7-sort-03" aria-hidden="true"></i><span class="filter-popup">' . __( 'Sort by name', 'the7mk2' ) . '</span></a>'
 			. '</div>'
 
 			. '<div class="filter-sorting"' . ( $show_order ? '' : $display_none ) . '>'
-				. '<a href="' . esc_url( add_query_arg( array( 'orderby' => $orderby, 'order' => 'DESC' ), $link ) ) . '" class="sort-by-desc' . ('desc' == $order ? $act : '') . '" data-sort="desc"><i class="fas fa-sort-amount-down" aria-hidden="true"></i><span class="filter-popup">' . __( 'Descending', 'the7mk2' ) . '</span></a>'
+				. '<a href="' . esc_url( add_query_arg( array( 'orderby' => $orderby, 'order' => 'desc' ), $link ) ) . '" class="sort-by-desc' . ('desc' === $order ? $act : '') . '" data-sort="desc"><i class="dt-icon-the7-sort-00" aria-hidden="true"></i><span class="filter-popup">' . __( 'Descending', 'the7mk2' ) . '</span></a>'
 				. '<span class="filter-switch"></span>'
-				. '<a href="' . esc_url( add_query_arg( array( 'orderby' => $orderby, 'order' => 'ASC' ), $link ) ) . '" class="sort-by-asc' . ('asc' == $order ? $act : '') . '" data-sort="asc"><i class="fas fa-sort-amount-up" aria-hidden="true"></i><span class="filter-popup">' . __( 'Ascending', 'the7mk2' ) . '</span></a>'
+				. '<a href="' . esc_url( add_query_arg( array( 'orderby' => $orderby, 'order' => 'asc' ), $link ) ) . '" class="sort-by-asc' . ('asc' === $order ? $act : '') . '" data-sort="asc"><i class="dt-icon-the7-sort-01" aria-hidden="true"></i><span class="filter-popup">' . __( 'Ascending', 'the7mk2' ) . '</span></a>'
 			. '</div>'
 		. '</div>';
 
 		return $html;
 	}
 
-endif; // presscore_get_categorizer_sorting_fields
+endif;
 
 if ( ! function_exists( 'presscore_get_category_list' ) ) :
 
@@ -240,9 +196,10 @@ if ( ! function_exists( 'presscore_get_category_list' ) ) :
 
 		$defaults = array(
 			'item_wrap'         => '<a href="%HREF%" %CLASS% data-filter="%CATEGORY_ID%">%TERM_NICENAME%</a>',
-			'hash'              => '#!term=%TERM_ID%&amp;page=%PAGE%&amp;orderby=date&amp;order=DESC',
+			'hash'              => [],
 			'item_class'        => '',
 			'all_class'        	=> 'show-all',
+			'all_text'			=> null,
 			'other_class'		=> '',
 			'class'             => 'filter',
 			'current'           => 'all',
@@ -255,25 +212,81 @@ if ( ! function_exists( 'presscore_get_category_list' ) ) :
 			'before'			=> '<div class="filter-categories">',
 			'after'				=> '</div>',
 			'act_class'			=> 'act',
+			'sorting'			=> [],
 		);
 		$args = wp_parse_args( $args, $defaults );
 		$args = apply_filters( 'presscore_get_category_list-args', $args );
 
 		$data = $args['data'];
 
+		$config = presscore_get_config();
+
+		$sorting_args = $args['sorting'];
+		if ( ! $sorting_args ) {
+			$filter_request = $config->get( 'request_display' );
+			if ( $filter_request === null ) {
+				$filter_request           = (array) $config->get( 'display' );
+				$filter_request['select'] = 'all';
+			}
+
+			$sorting_args = [
+				'order'           => strtolower( $config->get( 'order' ) ),
+				'orderby'         => strtolower( $config->get( 'orderby' ) ),
+				'show_order'      => $config->get( 'template.posts_filter.order.enabled' ),
+				'show_orderby'    => $config->get( 'template.posts_filter.orderby.enabled' ),
+				'select'          => isset( $filter_request['select'] ) ? $filter_request['select'] : 'all',
+				'term_id'         => isset( $filter_request['terms_ids'] ) ? current( (array) $filter_request['terms_ids'] ) : [],
+			];
+		}
+
+		$sorting_args = wp_parse_args(
+			$sorting_args,
+			[
+				'order'           => 'desc',
+				'orderby'         => 'date',
+				'default_order'   => null,
+				'default_orderby' => null,
+				'show_order'      => false,
+				'show_orderby'    => false,
+				'select'          => 'all',
+				'term_id'         => [],
+			]
+		);
+
+		if ( is_array( $args['hash'] ) ) {
+			$hash = wp_parse_args( $args['hash'], [
+				'term' => '%TERM_ID%',
+			] );
+
+			if ( $sorting_args['show_orderby'] && $sorting_args['orderby'] !== $sorting_args['default_orderby'] ) {
+				$hash['orderby'] = $sorting_args['orderby'];
+			}
+
+			if ( $sorting_args['show_order'] && $sorting_args['order'] !== $sorting_args['default_order'] ) {
+				$hash['order'] = $sorting_args['order'];
+			}
+
+			$args['hash'] = add_query_arg( $hash, get_permalink() );
+		}
+
 		$args['hash'] = str_replace( array( '%PAGE%' ), array( $args['page'] ), $args['hash'] );
 		$output = $all = '';
+
+		if ( $args['current'] === null ) {
+			$args['current'] = 'all';
+		}
 
 		if ( isset($data['terms']) &&
 		     ! is_wp_error( $data['terms'] ) &&
 			( ( count( $data['terms'] ) == 1 && !empty( $data['other_count'] ) ) ||
 			count( $data['terms'] ) > 1 )
 		) {
-			if ( !empty( $args['item_class'] ) ) {
-				$args['item_class'] = 'class="' . esc_attr($args['item_class']) . '"';
-			}
-
+			$data['terms'] = array_values( $data['terms'] );
 			$replace_list = array( '%HREF%', '%CLASS%', '%TERM_DESC%', '%TERM_NICENAME%', '%TERM_SLUG%', '%TERM_ID%', '%COUNT%', '%CATEGORY_ID%' );
+
+			if ( ! $args['all_btn'] && $args['current'] === 'all' ) {
+				$args['current'] = $data['terms'][0]->term_id;
+			}
 
 			$terms_done = array();
 			foreach( $data['terms'] as $term ) {
@@ -290,9 +303,11 @@ if ( ! function_exists( 'presscore_get_category_list' ) ) :
 					$item_class[] = $args['item_class'];
 				}
 
-				if ( in_array( $args['current'], array($term->term_id, $term->slug) ) ) {
+				if ( in_array( (string) $args['current'], array( (string) $term->term_id, (string) $term->slug ), true ) ) {
 					$item_class[] = $args['act_class'];
 				}
+
+				$item_class[] = (string) $term->slug;
 
 				if ( $item_class ) {
 					$item_class = sprintf( 'class="%s"', esc_attr( implode( ' ', $item_class ) ) );
@@ -303,7 +318,7 @@ if ( ! function_exists( 'presscore_get_category_list' ) ) :
 				$output .= str_replace(
 					$replace_list,
 					array(
-						esc_url( str_replace( array( '%TERM_ID%' ), array( $term->term_id ), $args['hash'] ) ),
+						esc_url( str_replace( [ '%TERM_ID%', '%TERM_SLUG%' ], [ $term->term_id, $term->slug ], $args['hash'] ) ),
 						$item_class,
 						$term->description,
 						$term->name,
@@ -336,10 +351,10 @@ if ( ! function_exists( 'presscore_get_category_list' ) ) :
 				$all = str_replace(
 					$replace_list,
 					array(
-						esc_url( str_replace( array( '%TERM_ID%' ), array( '' ), $args['hash'] ) ),
+						esc_url( str_replace( [ '%TERM_ID%', '%TERM_SLUG%' ], '', remove_query_arg( 'term', $args['hash'] ) ) ),
 						$all_class,
-						__( 'All posts', 'the7mk2' ),
-						__( 'View all', 'the7mk2' ),
+						$args['all_text'] ? $args['all_text'] : __( 'All posts', 'the7mk2' ),
+						$args['all_text'] ? $args['all_text'] : __( 'View all', 'the7mk2' ),
 						'',
 						'',
 						$data['all_count'],
@@ -369,7 +384,7 @@ if ( ! function_exists( 'presscore_get_category_list' ) ) :
 				$output .= str_replace(
 					$replace_list,
 					array(
-						esc_url( str_replace( array( '%TERM_ID%' ), array( 'none' ), $args['hash'] ) ),
+						esc_url( str_replace( [ '%TERM_ID%', '%TERM_SLUG%' ], 'none', $args['hash'] ) ),
 						$other_class,
 						__( 'Other posts', 'the7mk2' ),
 						__( 'Other', 'the7mk2' ),
@@ -381,8 +396,19 @@ if ( ! function_exists( 'presscore_get_category_list' ) ) :
 				); 
 			}
 
-			$output = '<div class="filter-categories">' . $all . $output . '</div>';
+			$output = '<div class="filter-categories" data-default-order="' . esc_attr( strtolower( $config->get( 'order' ) ) ) . '" data-default-orderby="' . esc_attr( strtolower( $config->get( 'orderby' ) ) ) . '">' . $all . $output . '</div>';
 			$output = str_replace( array( '%CLASS%' ), array( $args['class'] ), $output );
+		}
+
+		if ( ! empty( $sorting_args['show_order'] ) || ! empty( $sorting_args['show_orderby'] ) ) {
+			$output .= presscore_get_categorizer_sorting_fields(
+				$sorting_args['select'],
+				$sorting_args['term_id'],
+				$sorting_args['order'],
+				$sorting_args['orderby'],
+				$sorting_args['show_order'],
+				$sorting_args['show_orderby']
+			);
 		}
 
 		$output = apply_filters( 'presscore_get_category_list', $output, $args );
@@ -433,6 +459,8 @@ if ( ! function_exists( 'presscore_get_posts_small_list' ) ) :
 		$post_was_changed = false;
 		$post_backup = $post;
 
+		presscore_remove_masonry_lazy_load_attrs();
+
 		foreach ( $attachments_data as $data ) {
 
 			$new_post = null;
@@ -455,6 +483,7 @@ if ( ! function_exists( 'presscore_get_posts_small_list' ) ) :
 				'img_meta' 	=> array( $data['full'], $data['width'], $data['height'] ),
 				'img_id'	=> empty($data['ID']) ? 0 : $data['ID'],
 				'echo'		=> false,
+				'custom'    => 'aria-label="' . esc_attr__( 'Post image', 'the7mk2' ) . '"',
 				'wrap'		=> '<a %CLASS% %HREF% %CUSTOM%><img %IMG_CLASS% %SRC% %SIZE% %ALT% /></a>',
 			);
 
@@ -464,10 +493,10 @@ if ( ! function_exists( 'presscore_get_posts_small_list' ) ) :
 			}
 
 			if ( !empty( $data['parent_id'] ) ) {
-				$class = 'post-' . presscore_get_post_format_class( get_post_format( $data['parent_id'] ) );
+				$class = 'post-format-standard';
 
 				if ( empty($data['ID']) ) {
-					$attachment_args['wrap'] = '<a class="' . esc_attr( $image_args['class'] . ' no-avatar' ) . '" %HREF% %TITLE% style="width:' . $options['image_dimensions']['w'] . 'px; height: ' . $options['image_dimensions']['h'] . 'px;"></a>';
+					$attachment_args['wrap'] = '<a class="' . esc_attr( $image_args['class'] . ' no-avatar' ) . '" %HREF% %TITLE% style="width:' . $options['image_dimensions']['w'] . 'px; height: ' . $options['image_dimensions']['h'] . 'px;" %CUSTOM%></a>';
 					$attachment_args['img_meta'] = array('', 0, 0);
 					$attachment_args['options'] = false;
 				}
@@ -499,34 +528,14 @@ if ( ! function_exists( 'presscore_get_posts_small_list' ) ) :
 			$articles[] = $article;
 		}
 
+		presscore_add_masonry_lazy_load_attrs();
+
 		if ( $post_was_changed ) {
 			$post = $post_backup;
 			setup_postdata( $post );
 		}
 
 		return $articles;
-	}
-
-endif;
-
-if ( ! function_exists( 'presscore_is_load_more_pagination' ) ) :
-
-	/**
-	 * Description here
-	 *
-	 * @since 1.0.0
-	 * @return boolean Is we use load more button in pagination
-	 */
-	function presscore_is_load_more_pagination() {
-		return in_array( presscore_get_config()->get('load_style'), array( 'ajax_more', 'lazy_loading' ) );
-	}
-
-endif;
-
-if ( ! function_exists( 'presscore_is_lazy_loading' ) ) :
-
-	function presscore_is_lazy_loading() {
-		return ( 'lazy_loading' == presscore_get_config()->get( 'load_style' ) );
 	}
 
 endif;
@@ -698,7 +707,6 @@ if ( ! function_exists( 'presscore_get_posts_in_categories' ) ) :
 			'posts_per_page'	=> -1,
 			'post_type'			=> $options['post_type'],
 			'no_found_rows'     => 1,
-			'post_status'       => 'publish',
 			'suppress_filters'  => false,
 			'tax_query'         => array( array(
 				'taxonomy'      => $options['taxonomy'],
@@ -715,9 +723,7 @@ if ( ! function_exists( 'presscore_get_posts_in_categories' ) ) :
 			default: unset( $args['tax_query'] );
 		}
 
-		$query = new WP_Query( $args );
-
-		return $query;
+		return new WP_Query( apply_filters( 'the7_related_posts_query_args', $args ) );
 	}
 
 endif;
@@ -1016,9 +1022,75 @@ if ( ! function_exists( 'presscore_lazy_loading_enabled' ) ) :
 	 * @return boolean
 	 */
 	function presscore_lazy_loading_enabled() {
-		return (boolean) of_get_option( 'general-images_lazy_loading' );
+		return of_get_option( 'general-images_lazy_loading' ) === '1';
 	}
 
+endif;
+
+if ( ! function_exists( 'the7_theme_accent_color' ) ) :
+
+	/**
+	 * Return simplified accent color.
+	 */
+	function the7_theme_accent_color() {
+		if ( 'gradient' === of_get_option( 'general-accent_color_mode' ) ) {
+			$gradient_obj = the7_less_create_gradient_obj( of_get_option( 'general-accent_bg_color_gradient' ) );
+			$color = $gradient_obj->get_color_stop( 1 )->get_color();
+		} else {
+			$color = of_get_option( 'general-accent_bg_color' );
+		}
+        return $color;
+	}
+
+endif;
+
+if ( ! function_exists( 'the7_theme_get_color' ) ) :
+    function the7_theme_get_color( $color_type ) {
+        switch ( $color_type ) {
+            case 'accent':
+                $color_val = the7_theme_accent_color();
+                break;
+            default:
+                if ( substr_compare( $color_type, '_mode', - strlen( '_mode' ) ) === 0 ) {
+                    $color_val = the7_theme_get_simplified_color( $color_type );
+                    break;
+                }
+                $color_val = of_get_option( $color_type, '#000000' );
+                break;
+        }
+
+        return $color_val;
+    }
+endif;
+
+/**
+ * Return simplified hex color.
+ */
+if ( ! function_exists( 'the7_theme_get_simplified_color' ) ) :
+    function the7_theme_get_simplified_color( $color_mode_option ) {
+        $color_val = '';
+
+        $color_option = str_replace( "_mode", "", $color_mode_option );
+        switch ( of_get_option( $color_mode_option ) ) {
+            case 'disabled':
+                break;
+            case 'accent':
+                $color_val = the7_theme_accent_color();
+                break;
+            case 'color':
+                $color_val = of_get_option( $color_option );
+                break;
+            case 'gradient':
+                $gradient_obj = the7_less_create_gradient_obj( of_get_option( $color_option . '_gradient' ) );
+                $color_val = $gradient_obj->get_color_stop( 1 )->get_color();
+                break;
+        }
+        if ( empty( $color_val ) ) {
+            $color_val = '#ffffff00';
+        }
+
+        return $color_val;
+}
 endif;
 
 if ( ! function_exists( 'presscore_theme_color_meta' ) ) :
@@ -1027,14 +1099,7 @@ if ( ! function_exists( 'presscore_theme_color_meta' ) ) :
 	 * Display "theme-color" meta. Uses accent color.
 	 */
 	function presscore_theme_color_meta() {
-		if ( 'gradient' === of_get_option( 'general-accent_color_mode' ) ) {
-			$color = of_get_option( 'general-accent_bg_color_gradient' );
-			$color = isset( $color[0] ) ? $color[0] : '#ffffff';
-		} else {
-			$color = of_get_option( 'general-accent_bg_color' );
-		}
-
-		printf( '<meta name="theme-color" content="%s"/>', $color );
+		printf( '<meta name="theme-color" content="%s"/>', the7_theme_accent_color() );
 	}
 
 endif;
@@ -1084,3 +1149,168 @@ if ( ! function_exists( 'presscore_js_resize_event_hack' ) ):
 	}
 
 endif;
+
+if ( ! function_exists( 'the7_register_style' ) ) {
+
+	/**
+	 * Simple wrap for wp_register_style.
+	 *
+	 * @since 7.0.0
+	 *
+	 * @param string      $handle
+	 * @param string      $src
+	 * @param array       $deps
+	 * @param bool|string $ver
+	 * @param string      $media
+	 */
+	function the7_register_style( $handle, $src, $deps = array(), $ver = false, $media = 'all' ) {
+		$src = the7_add_asset_suffix( $src, '.css' );
+
+		wp_register_style( $handle, $src, $deps, $ver ? $ver : THE7_VERSION, $media );
+	}
+
+}
+
+if ( ! function_exists( 'the7_register_script' ) ) {
+
+	/**
+	 * Simple wrap for wp_register_script.
+	 *
+	 * @since 7.0.0
+	 *
+	 * @param string      $handle
+	 * @param string      $src
+	 * @param array       $deps
+	 * @param bool|string $ver
+	 * @param bool        $in_footer
+	 */
+	function the7_register_script( $handle, $src, $deps = array(), $ver = false, $in_footer = false ) {
+		$src = the7_add_asset_suffix( $src, '.js' );
+
+		wp_register_script( $handle, $src, $deps, $ver ? $ver : THE7_VERSION, $in_footer );
+	}
+}
+
+if ( ! function_exists( 'the7_register_script_in_footer' ) ) {
+
+	/**
+	 * Simple wrap for wp_register_script.
+	 *
+	 * @since 9.10.0
+	 *
+	 * @param string      $handle
+	 * @param string      $src
+	 * @param array       $deps
+	 * @param bool|string $ver
+	 * @param bool        $in_footer
+	 */
+	function the7_register_script_in_footer( $handle, $src, $deps = array(), $ver = false ) {
+		the7_register_script( $handle, $src, $deps, $ver, true );
+	}
+}
+
+if ( ! function_exists( 'the7_add_asset_suffix' ) ) {
+
+	/**
+	 * Add '.min' suffix to provided $src.
+	 *
+	 * @param string $src Asset uri without extension.
+	 * @param string $ext Asset extension.
+	 *
+	 * @return string
+	 * @since 7.1.0
+	 */
+	function the7_add_asset_suffix( $src, $ext ) {
+		// Remove extension if it already present.
+		if ( strpos( $src, $ext, strlen( $src ) - strlen( $ext ) ) !== false ) {
+			$src = substr( $src, 0, -strlen( $ext ) );
+		}
+
+		$suffix = '.min';
+
+		if ( defined( 'THE7_DEV_ENV' ) && THE7_DEV_ENV && file_exists( str_replace( PRESSCORE_THEME_URI, PRESSCORE_THEME_DIR, "{$src}{$ext}" ) ) ) {
+			$suffix = '';
+		}
+
+		return "{$src}{$suffix}{$ext}";
+	}
+}
+
+if ( ! function_exists( 'the7_register_fontawesome_style' ) ) {
+
+	/**
+	 * Register FontAwesome style with dedicated handler and dependencies.
+	 *
+	 * @since 7.0.0
+	 *
+	 * @param string $handle
+	 * @param array  $deps
+	 */
+    function the7_register_fontawesome_style( $handle, $deps = array() ) {
+	    wp_register_style( $handle, get_template_directory_uri() . '/fonts/FontAwesome/css/all.min.css', $deps, THE7_VERSION, 'all' );
+    }
+
+}
+
+/**
+ * Return `enable`.
+ *
+ * @since 7.5.0
+ * @return string
+ */
+function the7__return_enable() {
+    return 'enable';
+}
+
+/**
+ * @since 9.2.0
+ *
+ * @param mixed $current
+ * @param bool  $expected
+ * @param bool  $echo
+ *
+ * @return string
+ */
+function the7_prop_disabled( $current, $expected = true, $echo = true ) {
+	$result = '';
+
+	if ( (string) $expected === (string) $current ) {
+		$result = ' disabled="disabled"';
+	}
+
+	if ( $echo ) {
+		echo $result;
+	}
+
+	return $result;
+}
+
+/**
+ * @param $post_id
+ *
+ * @throws Exception
+ */
+function the7_update_post_css( $post_id ) {
+	$css = The7_Post_CSS_Generator::generate_css_for_post(
+		$post_id,
+		the7_get_new_shortcode_less_vars_manager(),
+		new The7_Less_Compiler()
+	);
+
+	if ( $css ) {
+		The7_Post_CSS_Generator::update_css_for_post( $post_id, $css );
+	} else {
+		The7_Post_CSS_Generator::delete_css_for_post( $post_id );
+	}
+}
+
+/**
+ * @param $post_id
+ */
+function the7_update_post_css_on_save( $post_id ) {
+	if ( wp_is_post_revision( $post_id ) ) {
+		return;
+	}
+
+	the7_update_post_css( $post_id );
+}

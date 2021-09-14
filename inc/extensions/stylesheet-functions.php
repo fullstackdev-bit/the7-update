@@ -90,15 +90,19 @@ function dt_stylesheet_color_hex2rgb( $_color, $return_array = false ) {
 }
 
 /**
- * Description here.
+ * @param string $color
+ * @param int    $opacity
  *
+ * @return string
  */
 function dt_stylesheet_color_hex2rgba( $color, $opacity = 0 ) {
-    if ( !$color ) return '';
+	if ( ! $color ) {
+		return '';
+	}
 
-    $rgb_array = dt_stylesheet_color_hex2rgb( $color, true );
+	$color_obj = new The7_Less_Vars_Value_Color( $color );
 
-    return sprintf( 'rgba(%d,%d,%d,%s)', $rgb_array[0], $rgb_array[1], $rgb_array[2], dt_stylesheet_get_opacity( $opacity ) );
+	return $color_obj->opacity( $opacity )->get_rgba();
 }
 
 function dt_stylesheet_color_rgba2rgb( $rgba ) {
@@ -221,18 +225,6 @@ function dt_stylesheet_make_web_font_object( $font, $defaults = array() ) {
     $font->weight = $weight;
 
     return $font;
-}
-
-/**
- * Description here.
- *
- */
-function dt_stylesheet_maybe_web_font( $font ) {
-	$font_parts = explode( ':', $font );
-	$font_name = $font_parts[0];
-    $websafe_fonts = array_keys( presscore_options_get_safe_fonts() );
-
-    return ( ! in_array( $font_name, $websafe_fonts ) );
 }
 
 /**

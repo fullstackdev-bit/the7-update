@@ -4,24 +4,25 @@
 	line-height: @b - 10px;
 }
 less.ph(@color: #ccc) {
-	input::-webkit-input-placeholder { color: @color; }
-	input:-moz-placeholder { color: @color; }
-	textarea::-webkit-input-placeholder { color: @color; }
-	textarea:-moz-placeholder { color: @color; }
+input::-webkit-input-placeholder { color: @color; }
+input:-moz-placeholder { color: @color; }
+textarea::-webkit-input-placeholder { color: @color; }
+textarea:-moz-placeholder { color: @color; }
 }
 less.ph.focus(@color: #ccc) {
-	input:focus::-webkit-input-placeholder { color: @color; }
-	input:focus:-moz-placeholder { color: @color; }
-	textarea:focus::-webkit-input-placeholder { color: @color; }
-	textarea:focus:-moz-placeholder { color: @color; }
+input:focus::-webkit-input-placeholder { color: @color; }
+input:focus:-moz-placeholder { color: @color; }
+textarea:focus::-webkit-input-placeholder { color: @color; }
+textarea:focus:-moz-placeholder { color: @color; }
 }
 less.ph(fade(@input-color, 50%));
 less.ph.focus(fade(@input-color, 15%));
 .form-fields label,
-.comment-form label {
+.comment-form label:not([for="wp-comment-cookies-consent"]) {
 	color: @input-color;
 }
 input[type="text"],
+.widget_search input[type="text"].searchform-s,
 input[type="search"],
 input[type="tel"],
 input[type="url"],
@@ -32,21 +33,26 @@ input[type="range"],
 input[type="password"],
 select,
 textarea,
-.wpcf7-number {
-	
+.wpcf7-number,
+.woocommerce div.elementor .the7-elementor-widget form.cart table.variations td.value select,
+.the7-elementor-product-comments .elementor-field-textual{
 	color: @input-color;
-	border-width: @input-border-width;
+	border-top-width: @top-input-border-width;
+	border-right-width: @right-input-border-width;
+	border-bottom-width: @bottom-input-border-width;
+	border-left-width: @left-input-border-width;
+	padding: @top-input-padding @right-input-padding @bottom-input-padding @left-input-padding;
 	border-color: @input-border-color;
 	background-color: @input-bg-color;
 	border-radius: @input-border-radius;
-	#page & {
+	.content & {
 		font-size: @base-font-size;
 		line-height: @base-line-height;
 		.mixin-float-line-height (@base-line-height, @input-height)
 	}
-	
 }
 input[type="text"],
+.widget_search input[type="text"].searchform-s,
 input[type="search"],
 input[type="tel"],
 input[type="url"],
@@ -56,7 +62,9 @@ input[type="date"],
 input[type="range"],
 input[type="password"],
 select,
-.wpcf7-number {
+.wpcf7-number,
+.tinvwl-input-group .form-control,
+.woocommerce div.elementor .the7-elementor-widget form.cart table.variations td.value select{
 	height: @input-height;
 }
 .formError + input,
@@ -64,31 +72,44 @@ select,
 	border-color: #f55b5f;
 }
 .select-icon(@colour) {
-	 background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="@{colour}" x="0px" y="0px" width="8px" height="8px" viewBox="0 0 386.257 386.257" style="enable-background:new 0 0 386.257 386.257;" xml:space="preserve"><polygon points="0,96.879 193.129,289.379 386.257,96.879 "/></svg>');
+	background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="@{colour}" x="0px" y="0px" width="8px" height="8px" viewBox="0 0 386.257 386.257" style="enable-background:new 0 0 386.257 386.257;" xml:space="preserve"><polygon points="0,96.879 193.129,289.379 386.257,96.879 "/></svg>');
 }
-select {
-    -webkit-appearance: none !important;
-    -moz-appearance: none;
-   .select-icon(fade(@input-color, 50%));
-    background-position: calc(100% ~'-' 15px) center;
-    background-repeat: no-repeat;
+
+select:not(.elementor-field),
+.woocommerce div.elementor .the7-elementor-widget form.cart table.variations td.value select:not(.elementor-field){
+	 -webkit-appearance: none !important;
+	 -moz-appearance: none;
+	 .select-icon(fade(@input-color, 50%));
+	 background-position: calc(100% ~'-' 10px) center;
+	 background-repeat: no-repeat;
+	 padding-right: calc(@right-input-padding ~'+' 15px);
+}
+ select:focus,
+ .woocommerce div.product.elementor form.cart table.variations td.value:focus:before {
+	outline: 0px solid transparent;
+	box-shadow: 0 0 0 2px @accent-bg-color;
+ }
+.woocommerce div.elementor .the7-elementor-widget form.cart table.variations td.value select:not(.elementor-field){
+	.select-icon(fade(@input-color, 50%))!important;
+}
+
+select:focus {
+	outline: 0px solid transparent;
+	box-shadow: 0 0 0 2px @accent-bg-color;
 }
 .dt-btn {
 	.widget .dt-form &,
 	.dt-form &,
 	.comment-form & {
-		font: @dt-btn-m-font-style @dt-btn-m-font-variant @dt-btn-m-font-weight @dt-btn-m-font-size~"/"@dt-btn-m-font-size + 2 @dt-btn-m-font-family;
+		font: @dt-btn-m-font-style @dt-btn-m-font-variant @dt-btn-m-font-weight @dt-btn-m-font-size~"/"@dt-btn-m-line-height @dt-btn-m-font-family;
 		text-transform: @dt-btn-m-text-transform;
-		.border-radius (@radius: @dt-btn-m-border-radius);
+		letter-spacing: @dt-btn-m-letter-spacing;
+		border-radius: var(--the7-medium-button-border-radius);
 		padding: @btn-m-padding-top @btn-m-padding-right @btn-m-padding-bottom @btn-m-padding-left;
 		min-height: @input-height;
 		line-height: @input-height;
 		padding-top: 0;
 		padding-bottom: 0;
-		.btn-3d & {
-			min-height: @input-height - 2px;
-			line-height: @input-height - 2px;
-		}
 	}
 }
 input[type="submit"]:not([name="update_cart"]):not(.woocommerce-widget-layered-nav-dropdown__submit),
@@ -97,22 +118,19 @@ input[type="submit"]:not([name="update_cart"]):not(.woocommerce-widget-layered-n
 div.mc4wp-form button[type="submit"],
 .tml-submit-wrap input[type="submit"],
 .wpcf7-form input[type="submit"] {
-	font: @dt-btn-m-font-style @dt-btn-m-font-variant @dt-btn-m-font-weight @dt-btn-m-font-size~"/"@dt-btn-m-font-size + 2 @dt-btn-m-font-family;
+	font: @dt-btn-m-font-style @dt-btn-m-font-variant @dt-btn-m-font-weight @dt-btn-m-font-size~"/"@dt-btn-m-line-height @dt-btn-m-font-family;
 	text-transform: @dt-btn-m-text-transform;
-	.border-radius (@radius: @dt-btn-m-border-radius);
+	border-radius: var(--the7-medium-button-border-radius);
 	padding: @btn-m-padding-top @btn-m-padding-right @btn-m-padding-bottom @btn-m-padding-left;
 	min-height: @input-height;
 	line-height: @input-height;
 	padding-top: 0;
 	padding-bottom: 0;
-	.btn-3d & {
-		min-height: @input-height - 2px;
-		line-height: @input-height - 2px;
-	}
 }
 .parentFormundefined,
 .wpcf7-mail-sent-ok,
-.wpcf7-validation-errors {
+.wpcf7-validation-errors,
+.wpcf7-response-output {
 	.popup-message-style &,
 	.inline-message-style &  {
 		background: @accent-bg-color;

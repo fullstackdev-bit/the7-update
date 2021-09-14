@@ -7,8 +7,6 @@
 // File Security Check
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-require_once trailingslashit( PRESSCORE_SHORTCODES_INCLUDES_DIR ) . 'abstract-dt-shortcode-with-inline-css.php';
-
 if ( ! class_exists( 'DT_Shortcode_Products_Carousel', false ) ) :
 
 	class DT_Shortcode_Products_Carousel extends DT_Shortcode_With_Inline_Css {
@@ -61,6 +59,7 @@ if ( ! class_exists( 'DT_Shortcode_Products_Carousel', false ) ) :
 				'slides_on_mob' => '1',
 				'adaptive_height' => 'y',
 				'item_space' => '30',
+				'stage_padding' => '0',
 				'speed' => '600',
 				'autoplay' => 'n',
 				'autoplay_speed' => "6000",
@@ -78,10 +77,12 @@ if ( ! class_exists( 'DT_Shortcode_Products_Carousel', false ) ) :
 				'arrow_border_radius' => '500px',
 				'arrow_border_width' => '0',
 				'arrow_icon_color' => '#ffffff',
+				'arrow_icon_border' => 'y',
 				'arrow_border_color' => '',
 				'arrows_bg_show' => 'y',
 				'arrow_bg_color' => '',
 				'arrow_icon_color_hover' => 'rgba(255,255,255,0.75)',
+				'arrow_icon_border_hover' => 'y',
 				'arrow_border_color_hover' => '',
 				'arrows_bg_hover_show' => 'y',
 				'arrow_bg_color_hover' => '',
@@ -119,7 +120,11 @@ if ( ! class_exists( 'DT_Shortcode_Products_Carousel', false ) ) :
 		 * Do shortcode here.
 		 */
 		protected function do_shortcode( $atts, $content = '' ) {
-			$query =  new WP_Query( $this->get_query_args() );
+			$query = $this->get_query();
+
+			if ( !$this->display_shortcode_content( $query ) ){
+				return;
+			}
 
 			do_action( 'presscore_before_shortcode_loop', $this->sc_name, $this->atts );
 
@@ -142,6 +147,15 @@ if ( ! class_exists( 'DT_Shortcode_Products_Carousel', false ) ) :
 						'post',
 					);
 
+					$lazy_loading_enabled = presscore_lazy_loading_enabled();
+					if ( $lazy_loading_enabled ) {
+						add_filter( 'wp_get_attachment_image_attributes', array( $this, 'add_owl_lazy_loading_class' ), 20 );
+					}
+
+					if ( $this->atts['product_descr'] === 'n' ) {
+						add_filter( 'woocommerce_short_description', '__return_empty_string' );
+					}
+
 					while ( $query->have_posts() ) : $query->the_post();
 						do_action('presscore_before_post');
 
@@ -156,8 +170,16 @@ if ( ! class_exists( 'DT_Shortcode_Products_Carousel', false ) ) :
 						echo '</article>';
 
 						do_action('presscore_after_post');
-					
 					endwhile;
+
+					if ( $this->atts['product_descr'] === 'n' ) {
+						remove_filter( 'woocommerce_short_description', '__return_empty_string' );
+					}
+
+					if ( $lazy_loading_enabled ) {
+						remove_filter( 'wp_get_attachment_image_attributes', array( $this, 'add_owl_lazy_loading_class' ), 20 );
+					}
+
 				endif;
 				if($this->get_att( 'show_products' ) == "top_products"){
 					remove_filter( 'posts_clauses', array( 'WC_Shortcodes', 'order_by_rating_post_clauses' ) );
@@ -223,6 +245,12 @@ if ( ! class_exists( 'DT_Shortcode_Products_Carousel', false ) ) :
 			}else{
 				$class[] = 'arrows-bg-off';
 			};
+			if($this->atts['arrow_icon_border'] === 'y'){
+				$class[] = 'dt-arrow-border-on';
+			}
+			if($this->atts['arrow_icon_border_hover'] === 'y'){
+				$class[] = 'dt-arrow-hover-border-on';
+			}
 			
 			if ( $this->get_att( 'arrow_bg_color' ) === $this->get_att( 'arrow_bg_color_hover' ) ) {
 				$class[] = 'disable-arrows-hover-bg';
@@ -276,6 +304,7 @@ if ( ! class_exists( 'DT_Shortcode_Products_Carousel', false ) ) :
 				'phone-columns-num' => $this->atts['slides_on_mob'],
 				'auto-height' => ($this->atts['adaptive_height'] === 'y') ? 'true' : 'false',
 				'col-gap' => $this->atts['item_space'],
+				'stage-padding' => $this->atts['stage_padding'],
 				'speed' => $this->atts['speed'],
 				'autoplay' => ($this->atts['autoplay'] === 'y') ? 'true' : 'false',
 				'autoplay_speed' => $this->atts['autoplay_speed'],
@@ -311,22 +340,39 @@ if ( ! class_exists( 'DT_Shortcode_Products_Carousel', false ) ) :
 			}
 			$config->set( 'product.preview.add_to_cart.position', 'on_image' );
 		}
+
+		/**
+		 * Add owl lazy loading class.
+		 *
+		 * @param array $attr Image attributes.
+		 *
+		 * @return array
+		 */
+		public function add_owl_lazy_loading_class( $attr ) {
+			if ( isset( $attr['class'] ) ) {
+				$attr['class'] = str_replace( array( 'lazy-load', 'iso-lazy-load' ), 'owl-lazy-load', $attr['class'] );
+			}
+
+			return $attr;
+		}
+
 		/**
 		 * Return array of prepared less vars to insert to less file.
 		 *
 		 * @return array
 		 */
 		protected function get_less_vars() {
-			$storage = new Presscore_Lib_SimpleBag();
-			$factory = new Presscore_Lib_LessVars_Factory();
-			$less_vars = new DT_Blog_LessVars_Manager( $storage, $factory );
+			$less_vars = the7_get_new_shortcode_less_vars_manager();
+			$less_vars = $this->less_vars( $less_vars );
+			return $less_vars->get_vars();
+		}
+
+		protected function less_vars( $less_vars ){
 			$less_vars->add_keyword( 'unique-shortcode-class-name', 'products-carousel-shortcode.' . $this->get_unique_class(), '~"%s"' );
+			$less_vars->add_rgba_color( 'post-title-color', $this->get_att( 'custom_title_color', '') );
+			$less_vars->add_rgba_color( 'post-content-color', $this->get_att( 'custom_content_color', '' ) );
 
-			$less_vars->add_keyword( 'post-title-color', $this->get_att( 'custom_title_color', '~""') );
-			$less_vars->add_keyword( 'post-content-color', $this->get_att( 'custom_content_color', '~""' ) );
-
-			$less_vars->add_keyword( 'price-color', $this->get_att( 'custom_price_color', '~""' ) );
-			
+			$less_vars->add_rgba_color( 'price-color', $this->get_att( 'custom_price_color', '' ) );
 
 			$less_vars->add_pixel_number( 'icon-size', $this->get_att( 'arrow_icon_size' ) );
 			$less_vars->add_paddings( array(
@@ -345,14 +391,13 @@ if ( ! class_exists( 'DT_Shortcode_Products_Carousel', false ) ) :
 			$less_vars->add_pixel_number( 'arrow-height', $this->get_att( 'arrow_bg_height' ) );
 			$less_vars->add_pixel_number( 'arrow-border-radius', $this->get_att( 'arrow_border_radius' ) );
 			$less_vars->add_pixel_number( 'arrow-border-width', $this->get_att( 'arrow_border_width' ) );
+			$less_vars->add_rgba_color ( 'icon-color', $this->get_att( 'arrow_icon_color', '' ) );
+			$less_vars->add_rgba_color ( 'arrow-border-color', $this->get_att( 'arrow_border_color', '' ) );
+			$less_vars->add_rgba_color ( 'arrow-bg', $this->get_att( 'arrow_bg_color', '' ) );
+			$less_vars->add_rgba_color ( 'icon-color-hover', $this->get_att( 'arrow_icon_color_hover', '' ) );
+			$less_vars->add_rgba_color ( 'arrow-border-color-hover', $this->get_att( 'arrow_border_color_hover', '' ) );
+			$less_vars->add_rgba_color ( 'arrow-bg-hover', $this->get_att( 'arrow_bg_color_hover', '' ) );
 
-			$less_vars->add_keyword( 'icon-color', $this->get_att( 'arrow_icon_color', '~""' ) );
-			$less_vars->add_keyword( 'arrow-border-color', $this->get_att( 'arrow_border_color', '~""' ) );
-			$less_vars->add_keyword( 'arrow-bg', $this->get_att( 'arrow_bg_color', '~""' ) );
-			$less_vars->add_keyword( 'icon-color-hover', $this->get_att( 'arrow_icon_color_hover', '~""' ) );
-			$less_vars->add_keyword( 'arrow-border-color-hover', $this->get_att( 'arrow_border_color_hover', '~""' ) );
-			$less_vars->add_keyword( 'arrow-bg-hover', $this->get_att( 'arrow_bg_color_hover', '~""' ) );
-			
 			$less_vars->add_keyword( 'arrow-right-v-position', $this->get_att( 'r_arrow_v_position' ) );
 			$less_vars->add_keyword( 'arrow-right-h-position', $this->get_att( 'r_arrow_h_position' ) );
 			$less_vars->add_pixel_number( 'r-arrow-v-position', $this->get_att( 'r_arrow_v_offset' ) );
@@ -368,16 +413,14 @@ if ( ! class_exists( 'DT_Shortcode_Products_Carousel', false ) ) :
 			$less_vars->add_pixel_number( 'arrow-right-h-position-mobile', $this->get_att( 'r_arrows_mobile_h_position' ) );
 
 			$less_vars->add_pixel_number( 'bullet-size', $this->get_att( 'bullet_size' ) );
-			$less_vars->add_keyword( 'bullet-color', $this->get_att( 'bullet_color', '~""' ) );
-			$less_vars->add_keyword( 'bullet-color-hover', $this->get_att( 'bullet_color_hover', '~""' ) );
+			$less_vars->add_rgba_color( 'bullet-color', $this->get_att( 'bullet_color', '' ) );
+			$less_vars->add_rgba_color( 'bullet-color-hover', $this->get_att( 'bullet_color_hover', '' ) );
 			$less_vars->add_pixel_number( 'bullet-gap', $this->get_att( 'bullet_gap' ) );
 			$less_vars->add_keyword( 'bullets-v-position', $this->get_att( 'bullets_v_position' ) );
 			$less_vars->add_keyword( 'bullets-h-position', $this->get_att( 'bullets_h_position' ) );
 			$less_vars->add_pixel_number( 'bullet-v-position', $this->get_att( 'bullets_v_offset' ) );
 			$less_vars->add_pixel_number( 'bullet-h-position', $this->get_att( 'bullets_h_offset' ) );
-			
-
-			return $less_vars->get_vars();
+			return  $less_vars;
 		}
 		protected function get_less_file_name() {
 			// @TODO: Remove in production.
@@ -434,7 +477,6 @@ if ( ! class_exists( 'DT_Shortcode_Products_Carousel', false ) ) :
 			}
 			$query_args =  array(
 				'post_type' => 'product',
-        		'post_status'		  => 'publish',
 				'ignore_sticky_posts'  => 1,
 				'posts_per_page' 	   => $post_count,
 				'orderby' 			  => $orderby,
@@ -460,7 +502,7 @@ if ( ! class_exists( 'DT_Shortcode_Products_Carousel', false ) ) :
 					}
 					break;
 				case 'sale_products':
-					$product_ids_on_sale = woocommerce_get_product_ids_on_sale();
+					$product_ids_on_sale = wc_get_product_ids_on_sale();
 					$meta_query = array();
 					$meta_query[] = $woocommerce->query->visibility_meta_query();
 					$meta_query[] = $woocommerce->query->stock_status_meta_query();
@@ -496,6 +538,15 @@ if ( ! class_exists( 'DT_Shortcode_Products_Carousel', false ) ) :
 			$query_args['tax_query'] = the7_product_visibility_tax_query( $query_args['tax_query'] );
 
 			return $query_args;
+		}
+
+		/**
+		 * Return products query.
+		 *
+		 * @return WP_Query Products query.
+		 */
+		protected function get_query() {
+			return new WP_Query( $this->get_query_args() );
 		}
 	}
 	

@@ -1,5 +1,16 @@
 !function($) {
 
+	/**
+	 * Fix for FontAwesome 4.x icons in VC UI.
+	 */
+	$('.vc_ui-panel-window-inner').each(function() {
+		var $this = $(this);
+
+		if (!$this.hasClass('dt-fa-compatibility')) {
+			$this.addClass('dt-fa-compatibility');
+		}
+	});
+
 	// dt_posttype param
 	$('.wpb_el_type_dt_posttype .dt_posttype').click(function(e){
 
@@ -164,32 +175,48 @@
 		this.valueField = valueField;
 		this.numberField = numberField;
 		this.unitsField = unitsField;
+		this.max = this.numberField.attr('max');
+		this.min = this.numberField.attr('min');
 		this.number = this.numberField.val();
 		this.units = this.valueField.attr('data-units');
 
 		this.addHandlers();
 	};
 
-	DTNumberParam.prototype.addHandlers = function() {
+	DTNumberParam.prototype.addHandlers = function () {
 		var self = this;
 
-		this.numberField.on('blur', function() {
-			self.number = $(this).val();
+		this.numberField.on('blur', function () {
+			var $this = $(this);
+			self.number = self.sanitizeValue($this.val());
+			$this.val(self.number);
 			self.updateParamValue();
 		});
 
-		this.unitsField.on('change', function() {
+		this.unitsField.on('change', function () {
 			self.units = $(this).val();
 			self.valueField.attr('data-units', self.units);
 			self.updateParamValue();
 		});
 	};
 
+	DTNumberParam.prototype.sanitizeValue = function (value) {
+		if (typeof this.min !== 'undefined') {
+			value = window.Math.max(this.min, value);
+		}
+		if (typeof this.max !== 'undefined') {
+			value = window.Math.min(this.max, value);
+		}
+
+		return value;
+	}
+
 	DTNumberParam.prototype.updateParamValue = function() {
 		if ( '' === this.number ) {
             this.valueField.val('');
             return;
 		}
+
 		this.valueField.val(parseInt(this.number) + this.units);
 	};
 
@@ -305,38 +332,6 @@
 		}
 
 		$this.val(value);
-	});
-
-	//Icons Navigation param
-
-	$(".dt-icon-list").each(function() {
-		var $thisList = $(this);
-		var iconS = $(".dt-icon-list-sub .selected", $thisList).attr("data-car-icon");
-		$(".dt-icons-selector > .moon-icon", $thisList).addClass(iconS);
-		$(".selector-button", $thisList).click(function() {
-			var $this = $(this);
-			if($this.find(" > i").hasClass("fa-arrow-down")){
-				$(".selector-button > i").removeClass("fa-arrow-up").addClass("fa-arrow-down");
-				$this.find("> i").removeClass("fa-arrow-down").addClass("fa-arrow-up");
-				$(".dt-icon-list-sub").hide();
-				$this.siblings(".dt-icon-list-sub").show();
-			}else{
-				$this.find("> i").removeClass("fa-arrow-up").addClass("fa-arrow-down");
-				$this.siblings(".dt-icon-list-sub").hide();
-			}
-
-		});
-		$(".dt-icon-list-sub li", $thisList).click(function() {
-			var $this = $(this);
-			$this.attr("class","selected").siblings().removeAttr("class");
-			var icon = $this.attr("data-car-icon");
-			$thisList.prev("input.dt_navigation, input.dt_soc_icon_manager").val(icon);
-			$this.parents(".dt-icons-selector").find("> i").removeAttr("class");
-			$this.parents(".dt-icons-selector").find("> i").addClass("moon-icon" ).addClass(icon);
-
-			$this.parent(".dt-icon-list-sub").hide();
-			$this.parents(".dt-icons-selector").find(" .selector-button > i").removeClass("fa-arrow-up").addClass("fa-arrow-down");
-		});
 	});
 
     // Image Options.

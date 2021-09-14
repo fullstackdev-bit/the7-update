@@ -107,7 +107,7 @@ if ( !class_exists( 'THE7_RWMB_Proportion_Slider_Field' ) ) {
 // New advanced image field
 /**************************************************************************************/
 
-if ( ! class_exists( 'THE7_RWMB_Image_Advanced_MK2_Field' ) )
+if ( ! class_exists( 'THE7_RWMB_Image_Advanced_MK2_Field' ) && class_exists( 'THE7_RWMB_Image_Field' ) )
 {
 	class THE7_RWMB_Image_Advanced_MK2_Field extends THE7_RWMB_Image_Field
 	{
@@ -203,7 +203,7 @@ if ( ! class_exists( 'THE7_RWMB_Image_Advanced_MK2_Field' ) )
 		 * Ajax callback for deleting files.
 		 * Modified from a function used by "Verve Meta Boxes" plugin
 		 *
-		 * @link http://goo.gl/LzYSq
+		 * @link https://goo.gl/LzYSq
 		 * @return void
 		 */
 		static function wp_ajax_delete_file()
@@ -930,7 +930,7 @@ if ( ! class_exists( 'THE7_RWMB_Fancy_Category_Field' ) ) {
 // Proper taxonomy field
 /**************************************************************************************/
 
-if ( ! class_exists( 'THE7_RWMB_Taxonomy_List_Field' ) )
+if ( ! class_exists( 'THE7_RWMB_Taxonomy_List_Field' ) && class_exists( 'THE7_RWMB_Taxonomy_Field' ) )
 {
 	class THE7_RWMB_Taxonomy_List_Field extends THE7_RWMB_Taxonomy_Field
 	{

@@ -56,47 +56,29 @@ if ( ! function_exists( 'dt_wc_upsell_display_args_filter' ) ) {
 	}
 }
 
-if ( ! function_exists( 'woocommerce_cross_sell_display' ) ) {
-
-	/**
-	 * Output the cart cross-sells.
-	 * (override)
-	 *
-	 * @param  integer $posts_per_page
-	 * @param  integer $columns
-	 * @param  string $orderby
-	 */
-	function woocommerce_cross_sell_display( $posts_per_page = 5, $columns = 5, $orderby = 'rand') {
-	    if ( is_checkout() ) {
-	      return;
-	    }
-	    // Get visble cross sells then sort them at random.
-	    $cross_sells = array_filter( array_map( 'wc_get_product', WC()->cart->get_cross_sells() ), 'wc_products_array_filter_visible' );
-
-	    // Handle orderby and limit results.
-	    $orderby     = apply_filters( 'woocommerce_cross_sells_orderby', $orderby );
-	    $cross_sells = wc_products_array_orderby( $cross_sells, $orderby );
-	    $posts_per_page       = apply_filters( 'woocommerce_cross_sells_total', $posts_per_page );
-	    $cross_sells = $posts_per_page > 0 ? array_slice( $cross_sells, 0, $posts_per_page ) : $cross_sells;
-
-	    wc_get_template( 'cart/cross-sells.php', array(
-	      'cross_sells'        => $cross_sells,
-
-	      // Not used now, but used in previous version of up-sells.php.
-	      'posts_per_page'   => $posts_per_page,
-	      'orderby'       => $orderby,
-	      'columns'       => $columns,
-	    ) );
-	  }
-	 
+/**
+ * Display cross-sells products in 5 columns layout.
+ *
+ * @return int
+ */
+function the7_woocommerce_cross_sells_columns() {
+	return 5;
 }
 
+/**
+ * Display 5 cross-sells products at once.
+ *
+ * @return int
+ */
+function the7_woocommerce_cross_sells_total() {
+	return 5;
+}
 
 if ( ! function_exists( 'dt_woocommerce_related_products_args' ) ) :
 
 	/**
 	 * Change related products args to array( 'posts_per_page' => 5, 'columns' => 5, 'orderby' => 'date' ).
-	 * 
+	 *
 	 * @param  array $args
 	 * @return array
 	 */
@@ -129,14 +111,26 @@ if ( ! function_exists( 'dt_woocommerce_body_class' ) ) :
 
 	/**
 	 * Body classes filter.
-	 * 
+	 *
 	 * @param  array $classes
 	 * @return array
 	 */
 	function dt_woocommerce_body_class( $classes ) {
-		if ( is_product() && in_array( presscore_get_config()->get( 'header_title' ), array( 'enabled', 'fancy' ) ) ) {
+		if ( ! is_product() ) {
+			return $classes;
+		}
+
+		$show_product_title = of_get_option( 'woocommerce_show_single_product_title' );
+
+		if ( $show_product_title === 'always' ) {
+			return $classes;
+		}
+
+		$page_title_enabled = in_array( presscore_get_config()->get( 'header_title' ), array( 'enabled', 'fancy' ) );
+		if ( $show_product_title === 'never' || $page_title_enabled ) {
 			$classes[] = 'hide-product-title';
 		}
+
 		return $classes;
 	}
 
@@ -161,17 +155,11 @@ if ( ! function_exists( 'dt_woocommerce_before_main_content' ) ) :
 	 * Display main content open tags and fire hooks.
 	 */
 	function dt_woocommerce_before_main_content () {
-
-		// remove woocommerce breadcrumbs
 		remove_action( 'woocommerce_before_main_content', 'woocommerce_breadcrumb', 20 );
 
-		// only for shop
-		if ( is_shop() || is_product_category() || is_product_tag() ) {
-
-			// remove woocommerce title
+		if ( is_shop() || is_product_taxonomy() ) {
 			add_filter( 'woocommerce_show_page_title', '__return_false');
 		}
-
 	?>
 		<!-- Content -->
 		<div id="content" class="content" role="main">
@@ -179,6 +167,23 @@ if ( ! function_exists( 'dt_woocommerce_before_main_content' ) ) :
 	}
 
 endif;
+
+if ( ! function_exists( 'dt_woocommerce_add_visible_class_to_wf_cell' ) ) {
+
+	/**
+	 * Add visible class to wf-cell product wrap.
+	 *
+	 * @param $array class
+	 *
+	 * @return array
+	 */
+	function dt_woocommerce_add_visible_class_to_wf_cell( $class ) {
+		$class[] = 'visible';
+
+		return $class;
+	}
+
+}
 
 if ( ! function_exists( 'dt_woocommerce_after_main_content' ) ) :
 
@@ -197,7 +202,7 @@ if ( ! function_exists( 'dt_woocommerce_replace_theme_breadcrumbs' ) ) :
 
 	/**
 	 * Breadcrumbs filter
-	 * 
+	 *
 	 * @param  string $html
 	 * @param  array  $args
 	 * @return string
@@ -206,14 +211,16 @@ if ( ! function_exists( 'dt_woocommerce_replace_theme_breadcrumbs' ) ) :
 
 		if ( ! $html ) {
 			ob_start();
-			woocommerce_breadcrumb( array(
-				'delimiter' => '',
-				'wrap_before' => '<div class="assistive-text"></div><ol' . $args['listAttr'] . '>',
-				'wrap_after' => '</ol>',
-				'before' => '<li>',
-				'after' => '</li>',
-				'home' => __( 'Home', 'the7mk2' ),
-			) );
+			woocommerce_breadcrumb(
+				array(
+					'delimiter'   => '',
+					'wrap_before' => '<ol' . $args['listAttr'] . ' itemscope itemtype="https://schema.org/BreadcrumbList">',
+					'wrap_after'  => '</ol>',
+					'before'      => $args['linkBefore'],
+					'after'       => $args['linkAfter'],
+					'home'        => __( 'Home', 'the7mk2' ),
+				)
+			);
 			$html = ob_get_clean();
 
 			$html = apply_filters( 'presscore_get_breadcrumbs', $args['beforeBreadcrumbs'] . $html . $args['afterBreadcrumbs'] );
@@ -253,20 +260,27 @@ if ( ! function_exists( 'dt_woocommerce_template_loop_category_title' ) ) :
 
 	/**
 	 * Show the subcategory title in the product loop.
+	 *
+	 * @param object $category Product term.
 	 */
 	function dt_woocommerce_template_loop_category_title( $category ) {
-		if ( presscore_config()->get( 'show_titles' ) ) :
-		?>
+		if ( presscore_config()->get( 'show_titles' ) ) {
+			$title_text = esc_html( $category->name );
+			if ( $category->count > 0 ) {
+				// translators: %s: number of products in a category.
+				$products_count = sprintf( _n( '%s Product', '%s Products', $category->count, 'the7mk2' ), number_format_i18n( $category->count ) );
+				$title_text    .= apply_filters(
+					'woocommerce_subcategory_count_html',
+					' <div class="count">' . esc_html( $products_count ) . '</div>',
+					$category
+				);
+			}
+			?>
 			<h3 class="entry-title">
-				<a href="<?php echo get_term_link( $category->slug, 'product_cat' ); ?>"><?php
-					echo $category->name;
-
-					if ( $category->count > 0 )
-						echo apply_filters( 'woocommerce_subcategory_count_html', ' <mark class="count">(' . $category->count . ')</mark>', $category );
-				?></a>
+				<a href="<?php echo esc_url( get_term_link( $category->slug, 'product_cat' ) ); ?>"><?php echo $title_text; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></a>
 			</h3>
-		<?php
-		endif;
+			<?php
+		}
 	}
 
 endif;
@@ -275,7 +289,7 @@ if ( ! function_exists( 'dt_woocommerce_get_page_title' ) ) :
 
 	/**
 	 * Wrap for woocommerce_page_title( false ).
-	 * 
+	 *
 	 * @param  string $title
 	 * @return string
 	 */
@@ -290,8 +304,8 @@ if ( ! function_exists( 'dt_woocommerce_template_product_desc_for_list' ) ) :
 	/**
 	 * Display product description under image template.
 	 */
-	function dt_woocommerce_template_product_desc_for_list() {
-		get_template_part( 'inc/mods/compatibility/woocommerce/front/templates/product/mod-wc-product-desc-list-layout' );
+	function dt_woocommerce_template_product_desc_for_list( $args = array() ) {
+		presscore_get_template_part( 'woocommerce', 'product/mod-wc-product-desc-list-layout', null, $args );
 	}
 
 endif;
@@ -301,13 +315,11 @@ if ( ! function_exists( 'dt_woocommerce_template_product_desc_under' ) ) :
 	/**
 	 * Display product description under image template.
 	 */
-	function dt_woocommerce_template_product_desc_under() {
-		get_template_part( 'inc/mods/compatibility/woocommerce/front/templates/product/mod-wc-product-desc-under' );
+	function dt_woocommerce_template_product_desc_under( $args = array() ) {
+		presscore_get_template_part( 'woocommerce', 'product/mod-wc-product-desc-under', null, $args );
 	}
 
 endif;
-
-
 
 if ( ! function_exists( 'dt_woocommerce_get_product_description' ) ) :
 
@@ -317,10 +329,7 @@ if ( ! function_exists( 'dt_woocommerce_get_product_description' ) ) :
 	function dt_woocommerce_get_product_description() {
 		ob_start();
 		get_template_part( 'inc/mods/compatibility/woocommerce/front/templates/product/mod-wc-product-description' );
-
-		$content = ob_get_contents();
-		ob_end_clean();
-		return $content;
+		return ob_get_clean();
 	}
 
 endif;
@@ -348,34 +357,52 @@ if ( ! function_exists( 'dt_woocommerce_template_subcategory_description' ) ) :
 
 endif;
 
-/* Get Hover image for WooCommerce Grid */
-
-function dt_woocommerce_get_alt_product_thumbnail() {
-    if ( of_get_option( 'woocommerce_hover_image' ) ) {
-	    global $product;
-
-	    if ( method_exists( 'WC_Product', 'get_gallery_image_ids' ) ) {
-		    $attachment_ids = $product->get_gallery_image_ids();
-        } else {
-		    $attachment_ids = $product->get_gallery_attachment_ids();
-        }
-
-	    $class = 'show-on-hover back-image';
-	    $size = 'shop_catalog';
-	    $image_size = apply_filters( 'single_product_archive_thumbnail_size', $size );
-
-	    if ( $attachment_ids ) {
-	        $loop = 0;
-	        foreach ( $attachment_ids as $attachment_id ) {
-	            $image_link = wp_get_attachment_url( $attachment_id);
-	            if ( ! $image_link )
-	                continue;
-	            $loop++;
-	            echo apply_filters('dt_woocommerce_get_alt_product_thumbnail', wp_get_attachment_image( $attachment_id, 'shop_catalog', false, array( 'class' => $class, $image_size )));
-	            if ($loop == 1) break;
-	        }
-	    }
+/**
+ * Return the first image in the product gallery.
+ *
+ * @param WC_Product $product Product.
+ *
+ * @return string
+ */
+function the7_wc_get_the_first_product_gallery_image_html( $product ) {
+	if ( method_exists( 'WC_Product', 'get_gallery_image_ids' ) ) {
+		$attachment_ids = $product->get_gallery_image_ids();
+	} else {
+		$attachment_ids = $product->get_gallery_attachment_ids();
 	}
+
+	if ( empty( $attachment_ids ) ) {
+		return '';
+	}
+
+	$class      = 'show-on-hover back-image';
+	$image_size = apply_filters( 'single_product_archive_thumbnail_size', 'shop_catalog' );
+
+	foreach ( $attachment_ids as $attachment_id ) {
+		if ( ! wp_get_attachment_url( $attachment_id ) ) {
+			continue;
+		}
+
+		return apply_filters(
+			'dt_woocommerce_get_alt_product_thumbnail',
+			wp_get_attachment_image( $attachment_id, $image_size, false, [ 'class' => $class ] )
+		);
+	}
+
+	return '';
+}
+
+/**
+ * Get Hover image for WooCommerce Grid.
+ */
+function dt_woocommerce_get_alt_product_thumbnail() {
+	if ( ! of_get_option( 'woocommerce_hover_image' ) ) {
+		return;
+	}
+
+	global $product;
+
+	echo the7_wc_get_the_first_product_gallery_image_html( $product ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 }
 
 add_action( 'dt_woocommerce_shop_loop_images', 'dt_woocommerce_get_alt_product_thumbnail', 11 );
@@ -387,7 +414,7 @@ if ( ! function_exists( 'presscore_wc_template_loop_product_thumbnail' ) ) :
 
 	/**
 	 * Display woocommerce_template_loop_product_thumbnail() wrapped with 'a' tag.
-	 * 
+	 *
 	 * @param  string $class
 	 */
 
@@ -475,7 +502,7 @@ if ( ! function_exists( 'dt_woocommerce_subcategory_thumbnail' ) ) :
 
 	/**
 	 * Display woocommerce_subcategory_thumbnail() wrapped with 'a' targ.
-	 * 
+	 *
 	 * @param  mixed $category
 	 * @param  string $class
 	 */
@@ -515,7 +542,7 @@ if ( ! function_exists( 'dt_woocommerce_get_product_icons_count' ) ) :
 
 	/**
 	 * Counts product icons for shop pages.
-	 * 
+	 *
 	 * @return integer
 	 */
 	function dt_woocommerce_get_product_icons_count() {
@@ -536,7 +563,7 @@ if ( ! function_exists( 'dt_woocommerce_product_show_content' ) ) :
 
 	/**
 	 * Controls content visibility.
-	 * 
+	 *
 	 * @return bool
 	 */
 	function dt_woocommerce_product_show_content() {
@@ -549,24 +576,30 @@ if ( ! function_exists( 'dt_woocommerce_get_product_add_to_cart_icon' ) ) :
 
 	/**
 	 * Return product add to cart icon html.
-	 * 
+	 *
 	 * @return string
 	 */
 	function dt_woocommerce_get_product_add_to_cart_icon() {
 		global $product;
 
 		if ( $product && presscore_config()->get( 'product.preview.icons.show_cart' ) ) {
-		    ob_start();
-			woocommerce_template_loop_add_to_cart(array(
-				'class' => implode( ' ', array_filter( array(
-						'product_type_' . $product->get_type(),
-						$product->is_purchasable() && $product->is_in_stock() ? 'add_to_cart_button' : '',
-						$product->supports( 'ajax_add_to_cart' ) ? 'ajax_add_to_cart' : ''
-				) ) )
-			));
-			$html = ob_get_clean();
+			ob_start();
+			woocommerce_template_loop_add_to_cart(
+				array(
+					'class' => implode(
+						' ',
+						array_filter(
+							array(
+								'product_type_' . $product->get_type(),
+								$product->is_purchasable() && $product->is_in_stock() ? 'add_to_cart_button' : '',
+								$product->supports( 'ajax_add_to_cart' ) ? 'ajax_add_to_cart' : '',
+							)
+						)
+					),
+				)
+			);
 
-			return $html;
+			return ob_get_clean();
 		}
 
 		return '';
@@ -592,7 +625,7 @@ if ( ! function_exists( 'dt_woocommerce_get_product_details_icon' ) ) :
 
 	/**
 	 * DEPRECATED. Return product details icon html.
-	 * 
+	 *
 	 * @param int
 	 * @param mixed
 	 *
@@ -612,7 +645,7 @@ if ( ! function_exists( 'dt_woocommerce_get_product_details_icon' ) ) :
 			$class = implode( ' ', $class );
 		}
 
-		$output = '<a href="' . get_permalink( $post_id ) . '" class="' . esc_attr( $class ) . '" rel="nofollow">' . __( 'Product details', 'the7mk2' ) . '</a>';
+		$output = '<a href="' . get_permalink( $post_id ) . '" class="' . esc_attr( $class ) . '">' . __( 'Product details', 'the7mk2' ) . '</a>';
 
 		return apply_filters( 'dt_woocommerce_get_product_details_icon', $output, $post_id, $class );
 	}
@@ -623,7 +656,7 @@ if ( ! function_exists( 'dt_woocommerce_filter_product_preview_icons' ) ) :
 
 	/**
 	 * Filters product icons for shop pages.
-	 * 
+	 *
 	 * @return string
 	 */
 	function dt_woocommerce_filter_product_preview_icons( $icons = '' ) {
@@ -640,7 +673,7 @@ if ( ! function_exists( 'dt_woocommerce_get_product_preview_icons' ) ) :
 
 	/**
 	 * Returns product icons for shop pages.
-	 * 
+	 *
 	 * @return string
 	 */
 	function dt_woocommerce_get_product_preview_icons() {
@@ -775,7 +808,7 @@ if ( ! function_exists( 'dt_woocommerce_filter_masonry_container_class' ) ) :
 
 	/**
 	 * Filers masonry container class array.
-	 * 
+	 *
 	 * @param  array  $class
 	 * @return array
 	 */
@@ -788,7 +821,7 @@ if ( ! function_exists( 'dt_woocommerce_filter_masonry_container_class' ) ) :
 		if ( 'wc_btn_on_hoover' === presscore_config()->get( 'post.preview.description.style' ) ) {
 			$class[] = 'cart-btn-on-hover';
 		}
-		
+
 		if ( 'browser_width_based' === presscore_config()->get( 'woocommerce_shop_template_responsiveness' ) ) {
 			$class[] = 'resize-by-browser-width';
 		}
@@ -814,6 +847,7 @@ if ( ! function_exists( 'dt_woocommerce_add_masonry_container_filters' ) ) :
 	 */
 	function dt_woocommerce_add_masonry_container_filters() {
 		add_filter( 'presscore_masonry_container_class', 'dt_woocommerce_filter_masonry_container_class' );
+		add_filter( 'presscore_before_post_masonry-wrap_class', 'dt_woocommerce_add_visible_class_to_wf_cell' );
 	}
 
 endif;
@@ -826,6 +860,7 @@ if ( ! function_exists( 'dt_woocommerce_remove_masonry_container_filters' ) ) :
 	function dt_woocommerce_remove_masonry_container_filters() {
 		remove_filter( 'presscore_masonry_container_class', 'dt_woocommerce_filter_masonry_container_class' );
 		remove_filter( 'presscore_masonry_container_data_atts', 'dt_woocommerce_filter_masonry_container_data_atts' );
+		remove_filter( 'presscore_before_post_masonry-wrap_class', 'dt_woocommerce_add_visible_class_to_wf_cell' );
 	}
 
 endif;
@@ -852,7 +887,7 @@ if ( ! function_exists( 'dt_woocommerce_share_buttons_action' ) ) :
 	 * Display share buttons on product page.
 	 */
 	function dt_woocommerce_share_buttons_action() {
-		presscore_display_share_buttons_for_post( 'product' );
+		the7_display_post_share_buttons( 'product' );
 	}
 
 endif;
@@ -909,17 +944,23 @@ endif;
 if ( ! function_exists( 'dt_woocommerce_wrap_add_to_cart_text_in_filter_popup' ) ) :
 
 	/**
-	 * @param string $link
-	 * @param object $product
+	 * Filter. Adds and icon to default WC add to cart button text.
+	 *
+	 * @param string     $link    Add to cart anchor HTML.
+	 * @param WC_Product $product Product.
 	 *
 	 * @return string
 	 */
-    function dt_woocommerce_wrap_add_to_cart_text_in_filter_popup( $link, $product ) {
-        $text = $product->add_to_cart_text();
-        $link = str_replace( $text, "<span class='filter-popup'>{$text}</span>", $link );
+	function dt_woocommerce_wrap_add_to_cart_text_in_filter_popup( $link, $product ) {
+		$text             = $product->add_to_cart_text();
+		$text_replacement = sprintf(
+			'<span class="filter-popup">%s</span><i class="popup-icon %s"></i>',
+			$text,
+			the7_get_wc_product_add_to_cart_icon( $product )
+		);
 
-        return $link;
-    }
+		return str_replace( ">$text<", ">$text_replacement<", $link );
+	}
 
 endif;
 
@@ -955,7 +996,7 @@ if ( ! function_exists( 'dt_woocommerce_add_shortcodes_inline_css_fix' ) ) {
 		}
 
 		if ( is_post_type_archive( 'product' ) && 0 === absint( get_query_var( 'paged' ) ) ) {
-			add_filter( 'the7_shortcodes_get_inline_css', 'dt_woocommerce_fix_shortcodes_inline_css_for_archives' );
+			add_filter( 'the7_shortcodes_get_custom_inline_css', 'dt_woocommerce_fix_shortcodes_inline_css_for_archives', 10, 2 );
 		}
 	}
 }
@@ -963,16 +1004,23 @@ if ( ! function_exists( 'dt_woocommerce_add_shortcodes_inline_css_fix' ) ) {
 if ( ! function_exists( 'dt_woocommerce_fix_shortcodes_inline_css_for_archives' ) ) {
 
 	/**
-     * Proper inline css on shop pages.
+	 * Proper inline css for shortcodes on shop page.
      *
-	 * @param string $inline_css
+     * Content of shop page will be displayed on top and shortcodes inline css would be brought from that page.
+	 *
+	 * @param string                       $inline_css
+	 * @param DT_Shortcode_With_Inline_Css $shortcode_obj
 	 *
 	 * @return string
 	 */
-	function dt_woocommerce_fix_shortcodes_inline_css_for_archives( $inline_css ) {
+	function dt_woocommerce_fix_shortcodes_inline_css_for_archives( $inline_css, $shortcode_obj ) {
 		$shop_page_id = wc_get_page_id( 'shop' );
 		if ( $shop_page_id ) {
-			$inline_css = get_post_meta( $shop_page_id, 'the7_shortcodes_inline_css', true );
+			$inline_css_array = (array) get_post_meta( $shop_page_id, 'the7_shortcodes_dynamic_css', true );
+			$uid              = the7_get_shortcode_uid( $shortcode_obj->get_tag(), $shortcode_obj->get_atts() );
+			if ( array_key_exists( $uid, $inline_css_array ) ) {
+				return $inline_css_array[ $uid ];
+			}
 		}
 
 		return $inline_css;
@@ -1026,10 +1074,10 @@ if(!function_exists('the7_layout_mode_switcher')) {
 		<div class="view-mode-switcher">
 
 			<?php if($view_mode === 'view_mode'): ?>
-				<a class="switch-mode-grid <?php if( $current_mode === 'masonry_grid' ) echo 'switcher-active'; ?>" href="<?php echo esc_url( $url_grid ); ?>"><i class="fa fa-th" aria-hidden="true"></i><span class="filter-popup"><?php esc_html_e('Grid view', 'the7mk2'); ?>
+				<a class="switch-mode-grid <?php if( $current_mode === 'masonry_grid' ) echo 'switcher-active'; ?>" href="<?php echo esc_url( $url_grid ); ?>"><i class="dt-icon-the7-misc-006-1" aria-hidden="true"></i><span class="filter-popup"><?php esc_html_e('Grid view', 'the7mk2'); ?>
 				</span></a>
 
-				<a class="switch-mode-list <?php if( $current_mode === 'list' ) echo 'switcher-active'; ?>" href="<?php echo esc_url( $url_list ); ?>"><i class="fa fa-th-list" aria-hidden="true"></i><span class="filter-popup"><?php esc_html_e('List view', 'the7mk2'); ?></span></a>
+				<a class="switch-mode-list <?php if( $current_mode === 'list' ) echo 'switcher-active'; ?>" href="<?php echo esc_url( $url_list ); ?>"><i class="dt-icon-the7-misc-006-2" aria-hidden="true"></i><span class="filter-popup"><?php esc_html_e('List view', 'the7mk2'); ?></span></a>
 			<?php endif ;?>
 		</div>
 		<?php
@@ -1111,4 +1159,77 @@ function the7_product_visibility_tax_query( $tax_query = array() ) {
 	);
 
 	return $tax_query;
+}
+
+if ( ! function_exists( 'dt_woocommerce_remove_product_info' ) ) :
+
+	/**
+	 * Controls product price and rating visibility.
+	 */
+	function dt_woocommerce_remove_product_info() {
+		remove_action( 'woocommerce_after_shop_loop_item_title', 'woocommerce_template_loop_price', 5 );
+		remove_action( 'woocommerce_after_shop_loop_item_title', 'woocommerce_template_loop_rating', 10 );
+	}
+
+endif;
+
+function the7_catalog_ordering( $orderby = '', $default_order = '' ) {
+	$show_default_orderby    = 'menu_order' === apply_filters( 'woocommerce_default_catalog_orderby', get_option( 'woocommerce_default_catalog_orderby', 'menu_order' ) );
+	$catalog_orderby_options = apply_filters(
+		'woocommerce_catalog_orderby',
+		array(
+			'menu_order' => __( 'Default sorting', 'woocommerce' ),
+			'popularity' => __( 'Sort by popularity', 'woocommerce' ),
+			'rating'     => __( 'Sort by average rating', 'woocommerce' ),
+			'date'       => __( 'Sort by latest', 'woocommerce' ),
+			'price'      => __( 'Sort by price: low to high', 'woocommerce' ),
+			'price-desc' => __( 'Sort by price: high to low', 'woocommerce' ),
+		)
+	);
+
+	$default_orderby = wc_get_loop_prop( 'is_search' ) ? 'relevance' : apply_filters( 'woocommerce_default_catalog_orderby', get_option( 'woocommerce_default_catalog_orderby', '' ) );
+
+	if ( wc_get_loop_prop( 'is_search' ) ) {
+		$catalog_orderby_options = array_merge( array( 'relevance' => __( 'Relevance', 'woocommerce' ) ), $catalog_orderby_options );
+
+		unset( $catalog_orderby_options['menu_order'] );
+	}
+
+	if ( ! $show_default_orderby ) {
+		unset( $catalog_orderby_options['menu_order'] );
+	}
+
+	if ( ! wc_review_ratings_enabled() ) {
+		unset( $catalog_orderby_options['rating'] );
+	}
+
+	if ( ! array_key_exists( $orderby, $catalog_orderby_options ) ) {
+		$orderby = current( array_keys( $catalog_orderby_options ) );
+	}
+
+	wc_get_template(
+		'loop/orderby.php',
+		array(
+			'catalog_orderby_options' => $catalog_orderby_options,
+			'orderby'                 => $orderby,
+			'show_default_orderby'    => $show_default_orderby,
+		)
+	);
+}
+
+/**
+ * Return WC Product add to cart icon class from Theme Options.
+ *
+ * @since 9.14.0
+ *
+ * @param WC_Product $product Product object.
+ *
+ * @return string
+ */
+function the7_get_wc_product_add_to_cart_icon( $product ) {
+	if ( in_array( $product->get_type(), [ 'variable', 'grouped' ], true ) ) {
+		return of_get_option( 'woocommerce_details_icon' );
+	}
+
+	return of_get_option( 'woocommerce_add_to_cart_icon' );
 }

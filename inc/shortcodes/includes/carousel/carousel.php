@@ -7,8 +7,6 @@
 // File Security Check
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-require_once trailingslashit( PRESSCORE_SHORTCODES_INCLUDES_DIR ) . 'abstract-dt-shortcode-with-inline-css.php';
-
 if ( ! class_exists( 'DT_Shortcode_Carousel', false ) ) {
 
 	class DT_Shortcode_Carousel extends DT_Shortcode_With_Inline_Css {
@@ -39,6 +37,7 @@ if ( ! class_exists( 'DT_Shortcode_Carousel', false ) ) {
 				'slides_on_mob' => '1',
 				'adaptive_height' => 'y',
 				'item_space' => '30',
+				'stage_padding' => '0',
 				'speed' => '600',
 				'autoplay' => 'n',
 				'autoplay_speed' => "6000",
@@ -51,10 +50,12 @@ if ( ! class_exists( 'DT_Shortcode_Carousel', false ) ) {
 				'arrow_border_radius' => '500px',
 				'arrow_border_width' => '0',
 				'arrow_icon_color' => '#ffffff',
+				'arrow_icon_border' => 'y',
 				'arrow_border_color' => '',
 				'arrows_bg_show' => 'y',
 				'arrow_bg_color' => '',
 				'arrow_icon_color_hover' => 'rgba(255,255,255,0.75)',
+				'arrow_icon_border_hover' => 'y',
 				'arrow_border_color_hover' => '',
 				'arrows_bg_hover_show' => 'y',
 				'arrow_bg_color_hover' => '',
@@ -140,7 +141,12 @@ if ( ! class_exists( 'DT_Shortcode_Carousel', false ) ) {
 			}else{
 				$class[] = 'arrows-bg-off';
 			};
-			
+			if($this->atts['arrow_icon_border'] === 'y'){
+				$class[] = 'dt-arrow-border-on';
+			}
+			if($this->atts['arrow_icon_border_hover'] === 'y'){
+				$class[] = 'dt-arrow-hover-border-on';
+			}
 			if ( $this->get_att( 'arrow_bg_color' ) === $this->get_att( 'arrow_bg_color_hover' ) ) {
 				$class[] = 'disable-arrows-hover-bg';
 			};
@@ -169,6 +175,7 @@ if ( ! class_exists( 'DT_Shortcode_Carousel', false ) ) {
 				'phone-columns-num' => $this->atts['slides_on_mob'],
 				'auto-height' => ($this->atts['adaptive_height'] === 'y') ? 'true' : 'false',
 				'col-gap' => $this->atts['item_space'],
+				'stage-padding' => $this->atts['stage_padding'],
 				'speed' => $this->atts['speed'],
 				'autoplay' => ($this->atts['autoplay'] === 'y') ? 'true' : 'false',
 				'autoplay_speed' => $this->atts['autoplay_speed'],
@@ -192,9 +199,8 @@ if ( ! class_exists( 'DT_Shortcode_Carousel', false ) ) {
 		 * @return array
 		 */
 		protected function get_less_vars() {
-			$storage = new Presscore_Lib_SimpleBag();
-			$factory = new Presscore_Lib_LessVars_Factory();
-			$less_vars = new DT_Blog_LessVars_Manager( $storage, $factory );
+			$less_vars = the7_get_new_shortcode_less_vars_manager();
+
 			$less_vars->add_keyword( 'unique-shortcode-class-name', 'carousel-shortcode.' . $this->get_unique_class(), '~"%s"' );
 
 			$less_vars->add_pixel_number( 'icon-size', $this->get_att( 'arrow_icon_size' ) );

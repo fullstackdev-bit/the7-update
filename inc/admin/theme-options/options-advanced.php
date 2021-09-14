@@ -1,8 +1,11 @@
 <?php
-// File Security Check.
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+/**
+ * Advanced theme options.
+ *
+ * @package The7
+ */
+
+defined( 'ABSPATH' ) || exit;
 
 $options[] = array(
 	'name' => _x( 'Advanced Settings', 'theme-options', 'the7mk2' ),
@@ -10,26 +13,9 @@ $options[] = array(
 	'id'   => 'advanced-settings',
 );
 
-$options[] = array(
-	'name' => _x( 'Margin for pages, posts & templates', 'theme-options', 'the7mk2' ),
-	'type' => 'block',
-);
-
-$options['general-page_content_margin'] = array(
-	'name'   => _x( 'Margin', 'theme-options', 'the7mk2' ),
-	'id'     => 'general-page_content_margin',
-	'type'   => 'spacing',
-	'std'    => '50px 50px',
-	'units'  => 'px',
-	'fields' => array(
-		_x( 'Top', 'theme-options', 'the7mk2' ),
-		_x( 'Bottom', 'theme-options', 'the7mk2' ),
-	),
-);
-
 $options[] = array( 'name' => _x( 'Responsiveness', 'theme-options', 'the7mk2' ), 'type' => 'block' );
 
-$options[] = array(
+$options['general-responsive'] = array(
 	'name'    => _x( 'Responsive layout', 'theme-options', 'the7mk2' ),
 	'id'      => 'general-responsive',
 	'std'     => '1',
@@ -38,34 +24,6 @@ $options[] = array(
 		'1' => _x( 'Enabled', 'theme-options', 'the7mk2' ),
 		'0' => _x( 'Disabled', 'theme-options', 'the7mk2' ),
 	),
-);
-
-$options[] = array( 'type' => 'divider' );
-
-$options[] = array( 'type' => 'title', 'name' => _x( 'Side padding', 'theme-options', 'the7mk2' ) );
-
-$options['general-side_content_paddings'] = array(
-	'name'  => _x( 'Side padding', 'theme-options', 'the7mk2' ),
-	'id'    => 'general-side_content_paddings',
-	'std'   => '40px',
-	'type'  => 'number',
-	'units' => 'px',
-);
-
-$options['general-switch_content_paddings'] = array(
-	'name'  => _x( 'When screen width is less then..', 'theme-options', 'the7mk2' ),
-	'id'    => 'general-switch_content_paddings',
-	'std'   => '640px',
-	'type'  => 'number',
-	'units' => 'px',
-);
-
-$options['general-mobile_side_content_paddings'] = array(
-	'name'  => _x( '..make padding', 'theme-options', 'the7mk2' ),
-	'id'    => 'general-mobile_side_content_paddings',
-	'std'   => '20px',
-	'type'  => 'number',
-	'units' => 'px',
 );
 
 $options[] = array( 'name' => _x( 'Performance', 'theme-options', 'the7mk2' ), 'type' => 'block' );
@@ -82,7 +40,7 @@ $options['general-images_lazy_loading'] = array(
 	),
 );
 
-$options[] = array(
+$options['general-smooth_scroll'] = array(
 	'name'    => _x( 'Enable "scroll-behaviour: smooth" for next gen browsers', 'theme-options', 'the7mk2' ),
 	'id'      => 'general-smooth_scroll',
 	'std'     => 'on',
@@ -118,6 +76,77 @@ $options['advanced-normalize_resize_on_mobile'] = array(
 	),
 );
 
+$options[] = array( 'type' => 'divider' );
+
+$options['advanced-fvm_enable_integration'] = array(
+	'id'        => 'advanced-fvm_enable_integration',
+	'name'      => sprintf(
+		_x(
+			'Enable <a href="%1$s" target="_blank">Fast Velocity Minify</a> plugin integration',
+			'theme-options',
+			'the7mk2'
+		),
+		'https://wordpress.org/plugins/fast-velocity-minify/'
+	),
+	'std'       => '0',
+	'type'      => 'radio',
+	'options'   => array(
+		'1' => _x( 'Enabled', 'theme-options', 'the7mk2' ),
+		'0' => _x( 'Disabled', 'theme-options', 'the7mk2' ),
+	),
+	'show_hide' => array(
+		'1' => 'show-fvm-options',
+	),
+);
+
+
+$options[] = array(
+	'type'  => 'js_hide_begin',
+	'class' => 'advanced-fvm_enable_integration show-fvm-options',
+);
+
+$options['advanced-fvm_script_timeout'] = array(
+	'id'    => 'advanced-fvm_script_timeout',
+	'name'  => _x( 'Delay loading of merged scripts', 'theme-options', 'the7mk2' ),
+	'std'   => '50',
+	'type'  => 'number',
+	'units' => 'ms',
+);
+
+$beautiful_loading_url = add_query_arg( 'page', 'options-framework', admin_url( 'admin.php', 'relative' ) );
+$beautiful_loading_url .= '#section-general-beautiful_loading';
+
+$options[] = array(
+	'id'   => 'test',
+	'type' => 'info',
+	'desc' => sprintf(
+		_x(
+			'- 50ms can significantly improve google page speed score
+- 1000ms and beyond is aggressive setting for particularly heavy sites
+- for best visual results use in combination with <a href="%1$s">beautiful loading</a>',
+			'theme-options',
+			'the7mk2'
+		),
+		esc_url_raw( $beautiful_loading_url )
+	),
+);
+
+$options[] = array( 'type' => 'js_hide_end' );
+
+$options[] = array( 'name' => _x( 'SEO', 'theme-options', 'the7mk2' ), 'type' => 'block' );
+
+$options['the7_opengraph_tags'] = array(
+	'id'      => 'the7_opengraph_tags',
+	'name'    => _x( 'The7 OpenGraph tags', 'theme-options', 'the7mk2' ),
+	'desc'    => _x( 'It can be safely disabled if any SEO plugin is used.', 'theme-options', 'the7mk2' ),
+	'std'     => '1',
+	'type'    => 'radio',
+	'options' => array(
+		'1' => _x( 'Enabled', 'theme-options', 'the7mk2' ),
+		'0' => _x( 'Disabled', 'theme-options', 'the7mk2' ),
+	),
+);
+
 $options[] = array(
 	'name' => _x( 'Custom CSS', 'theme-options', 'the7mk2' ),
 	'type' => 'heading',
@@ -126,12 +155,13 @@ $options[] = array(
 
 $options[] = array( 'name' => _x( 'Custom CSS', 'theme-options', 'the7mk2' ), 'type' => 'block' );
 
-$options[] = array(
-	'settings' => array( 'rows' => 16 ),
+$options['general-custom_css'] = array(
+	'settings' => array( 'rows' => 64, 'code_style' => 'text/css' ),
 	'id'       => 'general-custom_css',
 	'std'      => false,
-	'type'     => 'textarea',
+	'type'     => 'code_editor',
 	'sanitize' => 'without_sanitize',
+	'class'    => 'section-code_editor-long',
 );
 
 $options[] = array(
@@ -145,10 +175,11 @@ $options[] = array(
 	'type' => 'block',
 );
 
-$options[] = array(
-	'settings' => array( 'rows' => 16 ),
+$options['general-tracking_code'] = array(
+	'settings' => array( 'rows' => 32, 'code_style' => 'htmlmixed' ),
 	'id'       => 'general-tracking_code',
 	'std'      => false,
-	'type'     => 'textarea',
+	'type'     => 'code_editor',
 	'sanitize' => 'without_sanitize',
+	'class'    => 'section-code_editor-long',
 );

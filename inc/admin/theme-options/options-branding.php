@@ -99,6 +99,119 @@ $options['header-style-mixed-logo-padding'] = array(
 );
 
 $options[] = array(
+	'name'       => _x( 'Transparent top line', 'theme-options', 'the7mk2' ),
+	'id'         => 'branding-transparent-top-line-block',
+	'type'       => 'block',
+	'dependency' => array(
+		array(
+			'option'   => 'header-layout',
+			'operator' => '==',
+			'value'    => 'top_line',
+		),
+	),
+);
+
+$options['header-style-mixed-transparent-top_line-choose_logo'] = array(
+	'id'      => 'header-style-mixed-transparent-top_line-choose_logo',
+	'name'    => _x( 'Show logo', 'theme-options', 'the7mk2' ),
+	'std'     => 'main',
+	'type'    => 'radio',
+	'options' => array(
+		'custom' => _x( 'Custom logo', 'theme-options', 'the7mk2' ),
+		'main'   => _x( 'Default logo', 'theme-options', 'the7mk2' ),
+		'none'   => _x( 'Don\'t show', 'theme-options', 'the7mk2' ),
+	),
+);
+
+presscore_options_apply_template(
+	$options,
+	'logo',
+	'header-style-mixed-transparent-top_line',
+	array(),
+	array(
+		array(
+			array(
+				'field'    => 'header-style-mixed-transparent-top_line-choose_logo',
+				'operator' => '==',
+				'value'    => 'custom',
+			),
+		),
+	)
+);
+
+$options['header-style-mixed-transparent-top_line-logo-padding'] = array(
+	'id'         => 'header-style-mixed-transparent-top_line-logo-padding',
+	'name'       => _x( 'Logo padding', 'theme-options', 'the7mk2' ),
+	'divider'    => 'top',
+	'type'       => 'spacing',
+	'std'        => '0px 0px 0px 0px',
+	'dependency' => array(
+		'field'    => 'header-style-mixed-transparent-top_line-choose_logo',
+		'operator' => 'IN',
+		'value'    => array( 'custom', 'main' ),
+	),
+);
+
+$options[] = array(
+	'name'       => _x( 'Floating top line', 'theme-options', 'the7mk2' ),
+	'id'         => 'branding-floating-top-line-block',
+	'type'       => 'block',
+	'dependency' => array(
+		array(
+			'option'   => 'header-layout',
+			'operator' => '==',
+			'value'    => 'top_line',
+		),
+		array(
+			'option'   => 'layout-top_line-is_sticky',
+			'operator' => '==',
+			'value'    => '1',
+		),
+	),
+);
+
+$options['header-style-mixed-top_line-floating-choose_logo'] = array(
+	'id'      => 'header-style-mixed-top_line-floating-choose_logo',
+	'name'    => _x( 'Show logo', 'theme-options', 'the7mk2' ),
+	'std'     => 'main',
+	'type'    => 'radio',
+	'options' => array(
+		'custom' => _x( 'Custom logo', 'theme-options', 'the7mk2' ),
+		'main'   => _x( 'Default logo', 'theme-options', 'the7mk2' ),
+		'none'   => _x( 'Don\'t show', 'theme-options', 'the7mk2' ),
+	),
+);
+
+presscore_options_apply_template(
+	$options,
+	'logo',
+	'header-style-mixed-top_line-floating',
+	array(),
+	array(
+		array(
+			array(
+				'field'    => 'header-style-mixed-top_line-floating-choose_logo',
+				'operator' => '==',
+				'value'    => 'custom',
+			),
+		),
+	)
+);
+
+$options['header-style-mixed-top_line-floating-logo-padding'] = array(
+	'id'         => 'header-style-mixed-top_line-floating-logo-padding',
+	'name'       => _x( 'Logo padding', 'theme-options', 'the7mk2' ),
+	'divider'    => 'top',
+	'type'       => 'spacing',
+	'std'        => '0px 0px 0px 0px',
+	'dependency' => array(
+		'field'    => 'header-style-mixed-top_line-floating-choose_logo',
+		'operator' => 'IN',
+		'value'    => array( 'custom', 'main' ),
+	),
+);
+
+$options[] = array(
 	'name'       => _x( 'Floating navigation', 'theme-options', 'the7mk2' ),
 	'id'         => 'branding-floating-nav-block',
 	'type'       => 'block',
@@ -218,7 +331,7 @@ $options['header-transparent-mobile-first_switch-logo'] = array(
 	'type'    => 'radio',
 	'std'     => 'desktop',
 	'options' => array(
-		'desktop' => _x( 'Desktop logo', 'theme-options', 'the7mk2' ),
+		'desktop' => _x( 'Transparent header logo', 'theme-options', 'the7mk2' ),
 		'mobile'  => _x( 'Custom logo', 'theme-options', 'the7mk2' ),
 	),
 );
@@ -229,7 +342,7 @@ $options['header-transparent-mobile-second_switch-logo'] = array(
 	'type'    => 'radio',
 	'std'     => 'desktop',
 	'options' => array(
-		'desktop' => _x( 'Desktop logo', 'theme-options', 'the7mk2' ),
+		'desktop' => _x( 'Transparent header logo', 'theme-options', 'the7mk2' ),
 		'mobile'  => _x( 'Custom logo', 'theme-options', 'the7mk2' ),
 	),
 );
@@ -255,6 +368,66 @@ $options[] = array( 'type' => 'divider' );
 
 $options['header-style-transparent-mobile-logo-padding'] = array(
 	'id'   => 'header-style-transparent-mobile-logo-padding',
+	'name' => _x( 'Logo padding', 'theme-options', 'the7mk2' ),
+	'type' => 'spacing',
+	'std'  => '0px 0px 0px 0px',
+);
+$options[] = array(
+	'name'       => _x( 'Floating mobile header', 'theme-options', 'the7mk2' ),
+	'id'         => 'mobile-branding-floating-nav-block',
+	'type'       => 'block',
+	'dependency' => array(
+		
+			'option'   => 'header-mobile-floating_navigation',
+			'operator' => '==',
+			'value'    => 'sticky',
+		
+	),
+);
+
+$options['header-floating-mobile-first_switch-logo'] = array(
+	'id'      => 'header-floating-mobile-first_switch-logo',
+	'name'    => _x( 'First switch point (tablet)', 'theme-options', 'the7mk2' ),
+	'type'    => 'radio',
+	'std'     => 'desktop',
+	'options' => array(
+		'desktop' => _x( 'Mobile header logo', 'theme-options', 'the7mk2' ),
+		'mobile'  => _x( 'Custom logo', 'theme-options', 'the7mk2' ),
+	),
+);
+
+$options['header-floating-mobile-second_switch-logo'] = array(
+	'id'      => 'header-floating-mobile-second_switch-logo',
+	'name'    => _x( 'Second switch point (phone)', 'theme-options', 'the7mk2' ),
+	'type'    => 'radio',
+	'std'     => 'desktop',
+	'options' => array(
+		'desktop' => _x( 'Mobile header logo', 'theme-options', 'the7mk2' ),
+		'mobile'  => _x( 'Custom logo', 'theme-options', 'the7mk2' ),
+	),
+);
+
+presscore_options_apply_template( $options, 'logo', 'header-style-floating-mobile', array(), array(
+	array(
+		array(
+			'field'    => 'header-floating-mobile-first_switch-logo',
+			'operator' => '==',
+			'value'    => 'mobile',
+		),
+	),
+	array(
+		array(
+			'field'    => 'header-floating-mobile-second_switch-logo',
+			'operator' => '==',
+			'value'    => 'mobile',
+		),
+	),
+) );
+
+$options[] = array( 'type' => 'divider' );
+
+$options['header-style-floating-mobile-logo-padding'] = array(
+	'id'   => 'header-style-floating-mobile-logo-padding',
 	'name' => _x( 'Logo padding', 'theme-options', 'the7mk2' ),
 	'type' => 'spacing',
 	'std'  => '0px 0px 0px 0px',
@@ -322,10 +495,11 @@ $options['general-handheld_icon-retina_ipad'] = array(
 $options[] = array( 'name' => _x( 'Copyright information', 'theme-options', 'the7mk2' ), 'type' => 'block' );
 
 $options['bottom_bar-copyrights'] = array(
-	'id'   => 'bottom_bar-copyrights',
-	'name' => _x( 'Copyright information', 'theme-options', 'the7mk2' ),
-	'type' => 'textarea',
-	'std'  => false,
+	'id'       => 'bottom_bar-copyrights',
+	'name'     => _x( 'Copyright information', 'theme-options', 'the7mk2' ),
+	'type'     => 'textarea',
+	'std'      => false,
+	'sanitize' => 'without_sanitize',
 );
 
 $options['bottom_bar-credits'] = array(

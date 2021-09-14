@@ -1,9 +1,6 @@
 <?php
 
-// File Security Check.
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 return array(
 	'weight'                  => -1,
@@ -11,14 +8,11 @@ return array(
 	'base'                    => 'dt_carousel',
 	'icon'                    => 'dt_vc_ico_carousel',
 	'class'                   => 'dt_carousel',
-	'as_parent'               => array( 'except' => 'dt_carousel' ),
+	'as_parent'               => array( 'except' => 'dt_carousel, dt_slideshow, ult_tab_element, dt_team_carousel, dt_testimonials_carousel, dt_small_photos, dt_albums, dt_photos_masonry, dt_testimonials, dt_team, dt_albums_scroller, dt_portfolio_carousel, dt_portfolio_slide, dt_portfolio, dt_albums_carousel, dt_photos_carousel, dt_portfolio_slider, dt_products_carousel, dt_media_gallery_carousel, dt_before_after, dt_blog_scroller, dt_blog_posts, dt_blog_carousel, ult_range_slider, ultimate_carousel' ),
 	'content_element'         => true,
 	'controls'                => 'full',
 	'show_settings_on_create' => true,
 	'category'                => __( 'by Dream-Theme', 'the7mk2' ),
-	'admin_enqueue_css'       => array(
-		PRESSCORE_THEME_URI . '/fonts/icomoon-arrows-the7/style.css'
-	),
 	'params'                  => array(
 		array(
 			'heading'    => __( 'Columns & Responsiveness', 'the7mk2' ),
@@ -75,6 +69,13 @@ return array(
 			'edit_field_class' => 'vc_col-xs-12 vc_column dt_row-6',
 		),
 		array(
+			'heading'          => __( 'Stage padding ', 'the7mk2' ),
+			'param_name'       => 'stage_padding',
+			'type'             => 'dt_number',
+			'value'            => '0',
+			'edit_field_class' => 'vc_col-xs-12 vc_column dt_row-6',
+		),
+		array(
 			'heading'    => __( 'Enable adaptive height', 'the7mk2' ),
 			'param_name' => 'adaptive_height',
 			'type'       => 'dt_switch',
@@ -102,14 +103,14 @@ return array(
 			'edit_field_class' => 'vc_col-xs-12 vc_column dt_row-6',
 		),
 		array(
-			'heading'    => __( 'Transition speed', 'the7mk2' ),
-			'param_name' => 'speed',
-			'type'       => 'dt_number',
-			'value'      => '600',
-			'min'        => '100',
-			'max'        => '10000',
-			'step'       => '100',
-			'suffix'     => 'ms',
+			'heading'     => __( 'Transition speed', 'the7mk2' ),
+			'description' => __( '(milliseconds)', 'the7mk2' ),
+			'param_name'  => 'speed',
+			'type'        => 'dt_number',
+			'value'       => '600',
+			'min'         => '100',
+			'max'         => '10000',
+			'step'        => '100',
 		),
 		array(
 			'heading'    => __( 'Autoplay slides‏', 'the7mk2' ),
@@ -122,15 +123,15 @@ return array(
 			),
 		),
 		array(
-			'heading'    => __( 'Autoplay speed', 'the7mk2' ),
-			'param_name' => 'autoplay_speed',
-			'type'       => 'dt_number',
-			'value'      => '6000',
-			'min'        => '100',
-			'max'        => '10000',
-			'step'       => '10',
-			'suffix'     => 'ms',
-			'dependency' => array( 'element' => 'autoplay', 'value' => array( 'y' ) ),
+			'heading'     => __( 'Autoplay speed', 'the7mk2' ),
+			'description' => __( '(milliseconds)', 'the7mk2' ),
+			'param_name'  => 'autoplay_speed',
+			'type'        => 'dt_number',
+			'value'       => '6000',
+			'min'         => '100',
+			'max'         => '10000',
+			'step'        => '10',
+			'dependency'  => array( 'element' => 'autoplay', 'value' => array( 'y' ) ),
 		),
 		array(
 			'heading'    => __( 'Extra Class', 'the7mk2' ),
@@ -289,6 +290,21 @@ return array(
 			),
 		),
 		array(
+			'group' => __( 'Arrows', 'the7mk2' ),
+			'heading'    => __( 'Show arrow border color', 'the7mk2' ),
+			'param_name' => 'arrow_icon_border',
+			'type'       => 'dt_switch',
+			'value'      => 'y',
+			'options'    => array(
+				'Yes' => 'y',
+				'No'  => 'n',
+			),
+			'dependency'	=> array(
+				'element'	=> 'arrows',
+				'value'		=> 'y',
+			),
+		),
+		array(
 			'group'       => __( 'Arrows', 'the7mk2' ),
 			'heading'     => __( 'Arrow border color', 'the7mk2' ),
 			'description' => __( 'Live empty to use accent color.', 'the7mk2' ),
@@ -296,7 +312,7 @@ return array(
 			'type'        => 'colorpicker',
 			'value'       => '',
 			'dependency'  => array(
-				'element' => 'arrows',
+				'element' => 'arrow_icon_border',
 				'value'   => 'y',
 			),
 		),
@@ -351,6 +367,21 @@ return array(
 			),
 		),
 		array(
+			'group' => __( 'Arrows', 'the7mk2' ),
+			'heading'    => __( 'Show arrow border color hover', 'the7mk2' ),
+			'param_name' => 'arrow_icon_border_hover',
+			'type'       => 'dt_switch',
+			'value'      => 'y',
+			'options'    => array(
+				'Yes' => 'y',
+				'No'  => 'n',
+			),
+			'dependency'	=> array(
+				'element'	=> 'arrows',
+				'value'		=> 'y',
+			),
+		),
+		array(
 			'group'       => __( 'Arrows', 'the7mk2' ),
 			'heading'     => __( 'Arrow border color hover ', 'the7mk2' ),
 			'description' => __( 'Live empty to use accent color.', 'the7mk2' ),
@@ -358,7 +389,7 @@ return array(
 			'type'        => 'colorpicker',
 			'value'       => '',
 			'dependency'  => array(
-				'element' => 'arrows',
+				'element' => 'arrow_icon_border_hover',
 				'value'   => 'y',
 			),
 		),
@@ -551,8 +582,19 @@ return array(
 		),
 		//Arrows Responsiveness
 		array(
-			'group'            => __( 'Arrows Responsiveness', 'the7mk2' ),
-			'heading'          => __( 'Arrows responsiveness', 'the7mk2' ),
+			"group" => __("Arrows", 'the7mk2'),
+			'heading' => __( 'Arrows responsiveness', 'the7mk2' ),
+			'param_name' => 'dt_title_arrows',
+			'type' => 'dt_title',
+			'value' => '',
+			'dependency'	=> array(
+				'element'	=> 'arrows',
+				'value'		=> 'y',
+			),
+		),
+		array(
+			'group'            => __( 'Arrows', 'the7mk2' ),
+			'heading'          => __( 'Arrows behaviour', 'the7mk2' ),
 			'param_name'       => 'arrow_responsiveness',
 			'type'             => 'dropdown',
 			'value'            => array(
@@ -567,7 +609,7 @@ return array(
 			'edit_field_class' => 'vc_col-xs-12 vc_column dt_row-6',
 		),
 		array(
-			'group'      => __( 'Arrows Responsiveness', 'the7mk2' ),
+			'group'      => __( 'Arrows', 'the7mk2' ),
 			'heading'    => __( 'Enable if browser width is less then ', 'the7mk2' ),
 			'param_name' => 'hide_arrows_mobile_switch_width',
 			'type'       => 'dt_number',
@@ -576,7 +618,7 @@ return array(
 			'dependency' => array( 'element' => 'arrow_responsiveness', 'value' => array( 'hide-arrows' ) ),
 		),
 		array(
-			'group'      => __( 'Arrows Responsiveness', 'the7mk2' ),
+			'group'      => __( 'Arrows', 'the7mk2' ),
 			'heading'    => __( 'Enable if browser width is less then ', 'the7mk2' ),
 			'param_name' => 'reposition_arrows_mobile_switch_width',
 			'type'       => 'dt_number',
@@ -585,7 +627,7 @@ return array(
 			'dependency' => array( 'element' => 'arrow_responsiveness', 'value' => array( 'reposition-arrows' ) ),
 		),
 		array(
-			'group'      => __( 'Arrows Responsiveness', 'the7mk2' ),
+			'group'      => __( 'Arrows', 'the7mk2' ),
 			'heading'    => __( 'Left arrow horizontal offset', 'the7mk2' ),
 			'param_name' => 'l_arrows_mobile_h_position',
 			'type'       => 'dt_number',
@@ -594,7 +636,7 @@ return array(
 			'dependency' => array( 'element' => 'arrow_responsiveness', 'value' => array( 'reposition-arrows' ) ),
 		),
 		array(
-			'group'      => __( 'Arrows Responsiveness', 'the7mk2' ),
+			'group'      => __( 'Arrows', 'the7mk2' ),
 			'heading'    => __( 'Right arrow horizontal offset', 'the7mk2' ),
 			'param_name' => 'r_arrows_mobile_h_position',
 			'type'       => 'dt_number',

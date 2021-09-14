@@ -11,7 +11,6 @@
 	border-color: @customColor;
 }
 .custom-mixin-shadow ( @string: "", @customColor) when (iscolor(@customColor)) {
-	-webkit-box-shadow: @string @customColor;
 	box-shadow:         @string @customColor;
 }
 .bullets-position-horizontal(@position) when (@position = left) {
@@ -88,12 +87,20 @@
             height: @arrow-height;
             //border-style: solid;
             border-radius: @arrow-border-radius;
-            &:before,
-            &:after {
-                border-width: @arrow-border-width;
+            &:not(:hover):before {
+            	.dt-arrow-border-on&{
+                	border-width: @arrow-border-width;
+                }
             }
-            &:before {
-                .custom-mixin-border (@arrow-border-color);
+              &:hover:after {
+            	.dt-arrow-hover-border-on& {
+                	border-width: @arrow-border-width;
+                }
+            }
+            &:not(:hover):before {
+            	.dt-arrow-border-on& {
+                	.custom-mixin-border (@arrow-border-color);
+                }
             }
             .arrows-bg-on& {
                 &:before {
@@ -106,8 +113,10 @@
                     .custom-mixin-bg (@arrow-bg-hover);
                 }
             }
-            &:after {
-                .custom-mixin-border (@arrow-border-color-hover);
+            &:hover:after {
+            	.dt-arrow-hover-border-on& {
+                	.custom-mixin-border (@arrow-border-color-hover);
+                }
             }
             &.owl-prev {
                 .nav-v-position(@arrow-left-v-position, @l-arrow-v-position);
@@ -200,7 +209,8 @@
 	  			.custom-mixin-bg (@bullet-color);
 	  		}
 	  		&.active span {
-	  			border-color: @bullet-color-hover;
+	  			//border-color: @bullet-color-hover;
+	  			.custom-mixin-border(@bullet-color-hover);
 	  		}
 	  		&:not(.active):hover span {
 	  			.custom-mixin-bg (@bullet-color-hover);

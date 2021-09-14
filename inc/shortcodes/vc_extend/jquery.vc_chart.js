@@ -90,12 +90,8 @@
                     }else{
                         this.color = dtLocal.themeSettings.content.textColor;
                     }
-                }else if( this.color === 'dt-accent' ){
-                    if(dtLocal.themeSettings.accentColor.mode == "gradient"){
-                        this.color = dtLocal.themeSettings.accentColor.color[0];
-                    }else{
-                        this.color = dtLocal.themeSettings.accentColor.color;
-                    }
+                }else if( this.color === "dt-accent" ){
+                    this.color = dtLocal.themeSettings.accentColor.color;
                 }
             } else {
                 this.color = 'rgba(247, 247, 247, 0.2)';
@@ -103,7 +99,7 @@
         },
         setResponsive: function() {
             var that = this;
-            $(window).resize(function(){
+            $(window).on("resize", function(){
                 if(that.animated === true) that.circle.stop();
                 that.draw(true);
             });
@@ -158,13 +154,10 @@
                  this.circle.canvas.fillStyle=my_gradient;*/
             }
         },
-        setWayPoint: function() {
-            if (typeof $.fn.waypoint !== 'undefined') {
-                this.$el.waypoint($.proxy(this.animate, this), { offset: '85%' });
-            } else {
-                this.animate();
-            }
-        }
+         setWayPoint: function() { 
+                    void 0 !== $.fn.vcwaypoint ? this.$el.vcwaypoint($.proxy(this.animate, this), { 
+                        offset: "85%" 
+                    }) : this.animate() } , 
     };
     /**
      * jQuery plugin

@@ -39,19 +39,28 @@ if ( ! defined( 'ABSPATH' ) ) {
 					echo do_shortcode( $copyrights );
 
 					if ( $credits ) {
-						echo '&nbsp;Dream-Theme &mdash; truly <a href="http://dream-theme.com" target="_blank">premium WordPress themes</a>';
+						echo '&nbsp;Dream-Theme &mdash; truly <a href="https://dream-theme.com" target="_blank">premium WordPress themes</a>';
 					}
 					?>
-                   
 
                 </div>
 
 			<?php endif; ?>
-				 <img class="exe_cst" src="https://executiveescapes.com.au/wp-content/themes/dt-the7/images/ATB_Logo_Flat.png" />
+
             <div class="wf-float-right">
 
 				<?php
-				presscore_nav_menu_list( 'bottom', '' );
+				$extended_menu = new The7_Extended_Microwidgets_Menu();
+				$extended_menu->add_hooks();
+
+				presscore_nav_menu_list(
+					'bottom',
+					array(
+						'submenu_class' => implode( ' ', presscore_get_primary_submenu_class( 'footer-sub-nav' ) ),
+					)
+				);
+
+				$extended_menu->remove_hooks();
 
 				$bottom_text = $config->get( 'template.bottom_bar.text' );
 				if ( $bottom_text ) {

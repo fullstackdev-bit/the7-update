@@ -43,8 +43,8 @@ textarea {
 	font: @base-font-style @base-font-variant @base-font-weight @base-font-size~"/"@base-line-height @base-font-family;
 	font-size: @base-font-size;
 }
-.wpcf7-select {
-	height: @base-line-height + 14;
+.content .wpcf7-select {
+	line-height: calc(@input-height ~'-' 14px);
 	min-width: 200px;
 }
 a.clear-form,
@@ -89,7 +89,13 @@ a.clear-form,
 /* #Mini blog
 ================================================== */
 .post-content .text-secondary {
-	.color-base-transparent;
+	color: fade(@base-color, 50%);
+	.sidebar-content & {
+		color: fade(@widget-sidebar-color, 50%);
+	}
+	.footer & {
+		color: fade(@widget-footer-color, 50%);
+	}
 }
 
 .items-grid .post-content a:hover,
@@ -101,13 +107,6 @@ a.clear-form,
 .shortcode-banner-bg > * {
 	line-height: @base-line-height;
 }
-/* #Alert box
-================================================== */
-#main .wpb_alert strong {
-	font: @h5-font-style @h5-font-variant @h5-font-weight @h5-font-size~"/"@h5-line-height @h5-font-family;
-	text-transform: @h5-text-transform;
-}
-
 
 /*Layzr bg*/
 .layzr-bg(@color) {

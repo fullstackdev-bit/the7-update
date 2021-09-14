@@ -1,13 +1,10 @@
 <?php
 
-// File Security Check.
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 return array(
 	'weight' => -1,
-	'name' => __( 'Products Masonry & Grid', 'the7mk2' ),
+	'name' => __( 'Products Masonry and Grid', 'the7mk2' ),
 	'base' => 'dt_products_masonry',
 	'class' => 'dt_vc_sc_products_masonry',
 	'icon' => 'dt_vc_ico_products',
@@ -215,7 +212,7 @@ return array(
 				'element' => 'loading_mode',
 				'value'	=> 'standard',
 			),
-			'description' => __('Leave empty to use number from wp settings.', 'the7mk2'),
+			'description' => __('Leave empty to use value from the WP Reading settings.', 'the7mk2'),
 		),
 		array(
 			'heading' => __('Show all pages in paginator', 'the7mk2'),
@@ -266,7 +263,7 @@ return array(
 				'element' => 'loading_mode',
 				'value'	=> 'js_pagination',
 			),
-			'description' => __('Leave empty to use number from wp settings.', 'the7mk2'),
+			'description' => __('Leave empty to use value from the WP Reading settings.', 'the7mk2'),
 		),
 		array(
 			'heading' => __('Show all pages in paginator', 'the7mk2'),
@@ -317,7 +314,7 @@ return array(
 				'element' => 'loading_mode',
 				'value'	=> 'js_more',
 			),
-			'description' => __('Leave empty to use number from wp settings.', 'the7mk2'),
+			'description' => __('Leave empty to use value from the WP Reading settings.', 'the7mk2'),
 		),
 		array(
 			'heading' => __('Gap before pagination', 'the7mk2'),
@@ -354,7 +351,7 @@ return array(
 				'element' => 'loading_mode',
 				'value'	=> 'js_lazy_loading',
 			),
-			'description' => __('Leave empty to use number from wp settings.', 'the7mk2'),
+			'description' => __('Leave empty to use value from the WP Reading settings.', 'the7mk2'),
 		),
 		array(
 			'heading' => __( 'Categorization', 'the7mk2' ),
@@ -391,7 +388,7 @@ return array(
 			'param_name' => 'navigation_font_color',
 			'type' => 'colorpicker',
 			'value' => '',
-			'description' => __( 'Leave empty to use headers color.', 'the7mk2' ),
+			'description' => __( 'Leave empty to use headings color.', 'the7mk2' ),
 		),
 		array(
 			'heading' => __('Accent color', 'the7mk2'),

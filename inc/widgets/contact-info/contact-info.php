@@ -59,8 +59,16 @@ class Presscore_Inc_Widgets_ContactInfo extends WP_Widget {
 		// title
 		if ( $title ) echo $before_title . $title . $after_title;
 
+		$simulated_text_widget_instance = array_merge( $instance, array(
+			'filter' => false, // Because wpautop is not applied.
+			'visual' => false, // Because it wasn't created in TinyMCE.
+		) );
+		$text = apply_filters( 'widget_text', $text, $simulated_text_widget_instance );
+
 		// content
-		if ( $text ) echo '<div class="widget-info">' . apply_filters('get_the_excerpt', $text) . '</div>';
+		if ( $text ) {
+			echo '<div class="widget-info">' . $text . '</div>';
+		}
 
 		// fields
 		if ( !empty($fields) ) {
@@ -93,9 +101,10 @@ class Presscore_Inc_Widgets_ContactInfo extends WP_Widget {
 					continue;
 				}
 
-				$title = ( isset( self::$social_icons[ $class ] ) ? self::$social_icons[ $class ] : '' );
+				// translators: %s : icon name
+				$icon_title = sprintf( __( '%s page opens in new window', 'the7mk2' ), self::$social_icons[ $class ] );
 
-				echo presscore_get_social_icon( $class, $link, $title );
+				echo presscore_get_social_icon( $class, $link, $icon_title );
 			}
 
 			echo '</div>';

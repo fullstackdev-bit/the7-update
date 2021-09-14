@@ -85,18 +85,23 @@ if ( ! function_exists( 'presscore_comment' ) ) :
 					</div><!-- .comment-content -->
 
 					<?php
-					$icon = '<i class="fa fa-reply" aria-hidden="true"></i>&nbsp;';
+					$icon = '<i class="dt-icon-the7-misc-099" aria-hidden="true"></i>&nbsp;';
 
-					comment_reply_link(array_merge( $args, array(
-						'add_below' => 'div-comment',
-						'depth'     => $depth,
-						'max_depth' => $args['max_depth'],
-						'before'    => '<div class="reply">',
-						'after'     => '</div>',
-						'reply_text'    => $icon . __( 'Reply', 'the7mk2' ),
-						'reply_to_text' => $icon . __( 'Reply to %s', 'the7mk2' ),
-						'login_text'    => $icon . __( 'Log in to Reply', 'the7mk2' ),
-					) ));
+					comment_reply_link(
+						array_merge(
+							$args,
+							array(
+								'add_below'     => 'div-comment',
+								'depth'         => $depth,
+								'max_depth'     => $args['max_depth'],
+								'before'        => '<div class="reply">',
+								'after'         => '</div>',
+								'reply_text'    => $icon . __( 'Reply', 'the7mk2' ),
+								'reply_to_text' => __( 'Reply to %s', 'the7mk2' ),
+								'login_text'    => $icon . __( 'Log in to Reply', 'the7mk2' ),
+							)
+						)
+					);
 					?>
 				</article><!-- .comment-body -->
 		<?php
